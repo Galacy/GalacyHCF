@@ -1,4 +1,4 @@
-package galacy.galacyhcf.provider;
+package galacy.galacyhcf.providers;
 
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
@@ -27,7 +27,7 @@ public class MySQL {
 
     public void close() {
         try {
-            connection.close();
+            if(connection.isClosed()) return; else connection.close();
             GalacyHCF.instance.getLogger().info(TextFormat.AQUA + "[MySQL]: The connection to the database was terminated.");
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Could not close the database connection: " + e);

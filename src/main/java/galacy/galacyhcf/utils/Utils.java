@@ -1,5 +1,12 @@
 package galacy.galacyhcf.utils;
 
+import galacy.galacyhcf.GalacyHCF;
+
+import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
+
 public class Utils {
-    public static final String getPrefix = "§l§8(§r§4LegacyHCF§l§8) §r";
+    public static final String prefix = GalacyHCF.dotenv.get("PREFIX");
+    public static final Pattern factionRgx = Pattern.compile("^[a-zA-Z0-9]+$");
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 }

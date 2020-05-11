@@ -2,8 +2,8 @@ package galacy.galacyhcf.models;
 
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
-import galacy.galacyhcf.provider.MySQL;
-import galacy.galacyhcf.provider.SQLStatements;
+import galacy.galacyhcf.providers.MySQL;
+import galacy.galacyhcf.providers.SQLStatements;
 
 import java.sql.Date;
 import java.sql.ResultSet;

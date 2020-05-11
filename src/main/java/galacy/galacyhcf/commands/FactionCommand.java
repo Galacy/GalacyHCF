@@ -6,9 +6,30 @@ import cn.nukkit.command.data.CommandParamType;
 import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.command.defaults.VanillaCommand;
 import cn.nukkit.utils.TextFormat;
+import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.utils.Utils;
 
 public class FactionCommand extends VanillaCommand {
+    public static final String[] helpList = new String[] {
+            "/f create <name>",
+            "/f disband",
+            "/f leave",
+            "/f claim",
+            "/f sethome",
+            "/f home",
+            "/f stuck",
+            "/f balance",
+            "/f who <player>",
+            "/f info <faction>",
+            "/f withdraw <amount>",
+            "/f deposit <amount>",
+            "/f invite <name>",
+            "/f kick  <name>",
+            "/f map",
+            "/f leader <name>",
+            "/f members"
+    };
+
     public FactionCommand(String name) {
         super(name, "Factions Command", "/f help");
         setAliases(new String[]{"faction", "hcf", "fac", "factions", "team", "t", "hardcorefaction", "hardcorefactions"});
@@ -19,106 +40,110 @@ public class FactionCommand extends VanillaCommand {
                 });
     }
 
-    public String[] getHelp() {
-        return new String[] {
-                "/f create <name>",
-                "/f disband",
-                "/f leave",
-                "/f claim",
-                "/f sethome",
-                "/f home",
-                "/f stuck",
-                "/f balance",
-                "/f who <player>",
-                "/f info <faction>",
-                "/f withdraw <amount>",
-                "/f deposit <amount>",
-                "/f invite <name>",
-                "/f kick  <name>",
-                "/f map",
-                "/f leader <name>",
-                "/f members"
-        };
-    }
-
     @Override
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
         if (sender instanceof Player) { //Replace with future custom Player class
             Player player = (Player) sender;
             if (args.length == 0) {
-                player.sendMessage(Utils.getPrefix + TextFormat.RED + "Invalid argument ! use the command /f help to see the commands.");
+                player.sendMessage(Utils.prefix + TextFormat.RED + "Invalid argument ! use the command /f help to see the commands.");
             }
             switch (args[0].toLowerCase()) {
-                case "freeze":
-                    //Coming soon features
-                    break;
+//                case "freeze":
+//
+//                    break;
                 case "help":
                 case "?":
-                    player.sendMessage(Utils.getPrefix + TextFormat.RED + "Faction commands list!");
-                    for (String help : getHelp()) {
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "Faction commands list!");
+                    for (String help : helpList) {
                         player.sendMessage(TextFormat.GREEN + "-" + TextFormat.GRAY + help);
                     }
                     break;
-                case "setdtr":
-                    //Coming soon features
-                    break;
+//                case "setdtr":
+//
+//                    break;
                 case "claim":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "create":
                 case "make":
+                    if (GalacyHCF.playersManager.inFaction((Player) sender)) {
+                        sender.sendMessage(Utils.prefix + TextFormat.RED + "Please leave your faction before doing this!");
+
+                        break;
+                    }
+                    if(args[1] != null) {
+                        if (args[1].length() > 15) {
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction name too big!");
+
+                            break;
+                        }
+                        if (args[1].length() < 4) {
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction name can't be less than 4 characters!");
+
+                            break;
+                        }
+                        if (!Utils.factionRgx.matcher(args[1]).matches()) {
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You can't use special characters!");
+
+                            break;
+                        }
+
+                        GalacyHCF.factionsManager.createFaction(args[1], ((Player) sender));
+                        GalacyHCF.instance.getServer().broadcastMessage("Faction "+args[1]+" was just created by "+sender.getName());
+                    } else sender.sendMessage(Utils.prefix + TextFormat.RED + "/f create <faction name>");
+
                     break;
                 case "disband":
                 case "delete":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "leave":
                 case "quit":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "home":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "stuck":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "sethome":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "deposit":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "info":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "chat":
                 case "c":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "who":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "withdraw":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "members":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "kick":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "invite":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "accept":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "leader":
                 case "setleader":
-                    //Coming soon features
+                    // TODO
                     break;
                 case "deny":
-                    //Coming soon features
+                    // TODO
                     break;
             }
         }

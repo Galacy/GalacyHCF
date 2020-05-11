@@ -1,18 +1,17 @@
-package galacy.galacyhcf.faction;
+package galacy.galacyhcf.managers;
 
 import cn.nukkit.Player;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
-import galacy.galacyhcf.provider.MySQL;
-import galacy.galacyhcf.provider.SQLStatements;
+import galacy.galacyhcf.providers.MySQL;
+import galacy.galacyhcf.providers.SQLStatements;
+import galacy.galacyhcf.utils.Utils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class FactionsManager {
-    public final SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public MySQL mysql;
 
     public FactionsManager(MySQL db) {
@@ -37,7 +36,7 @@ public class FactionsManager {
 
             return;
         }
-        String currentTime = dateFmt.format(new Date());
+        String currentTime = Utils.dateFormat.format(new Date());
 
         String sql = SQLStatements.createFaction.replace("$created_at", currentTime).
                 replace("$updated_at", currentTime).

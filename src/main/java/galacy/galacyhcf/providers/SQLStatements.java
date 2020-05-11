@@ -1,4 +1,4 @@
-package galacy.galacyhcf.provider;
+package galacy.galacyhcf.providers;
 
 public class SQLStatements {
     public static final String createFaction = "INSERT INTO factions(created_at, updated_at, name, balance, dtr, leader_id) VALUES ('$created_at', '$updated_at', '$name', $balance, $dtr, $leader_id);";
