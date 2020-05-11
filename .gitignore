@@ -26,3 +26,6 @@ hs_err_pid*
 # Idea files
 .idea/
 GalacyHCF.iml
+
+# Config files
+.env
