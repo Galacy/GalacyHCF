@@ -13,10 +13,14 @@ public class GalacyHCF extends PluginBase {
 
     @Override
     public void onEnable() {
-        dotenv = Dotenv.load();
+        if(getDataFolder().mkdir()) {
+            getLogger().info("Successfully created data folder.");
+        }
+
+        dotenv = Dotenv.configure().directory(getDataFolder().getPath()).load();
         instance = this;
-        mysql = new MySQL(dotenv.get("USERNAME"), dotenv.get("PASSWORD"), dotenv.get("DATABASE"));
-        getServer().getLogger().info(TextFormat.GREEN + "[HCF] Everything was loaded successfully.");
+        mysql = new MySQL(dotenv.get("DB_USERNAME"), dotenv.get("DB_PASSWORD"), dotenv.get("DB_NAME"));
+        getLogger().info(TextFormat.GREEN + "[HCF] Everything was loaded successfully.");
     }
 
     @Override
