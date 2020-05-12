@@ -2,7 +2,7 @@ package galacy.galacyhcf;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
-import galacy.galacyhcf.commands.FactionCommand;
+import galacy.galacyhcf.managers.CommandManager;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.managers.PlayersManager;
@@ -35,7 +35,7 @@ public class GalacyHCF extends PluginBase {
         playersManager = new PlayersManager(mysql);
 
         // Commands
-        getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));
+        CommandManager.register();
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
