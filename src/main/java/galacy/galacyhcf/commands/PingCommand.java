@@ -8,7 +8,7 @@ import galacy.galacyhcf.models.GPlayer;
 public class PingCommand extends VanillaCommand {
     public PingCommand(String name) {
         super(name, "Ping Command", "/ping");
-        setAliases(new String[]{"ms"});
+        setAliases(new String[]{"ms", "latency", "internet"});
     }
 
     @Override

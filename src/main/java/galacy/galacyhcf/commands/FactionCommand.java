@@ -7,8 +7,11 @@ import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.command.defaults.VanillaCommand;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.utils.Utils;
+
+import java.util.Date;
 
 public class FactionCommand extends VanillaCommand {
     public static final String[] helpList = new String[] {
@@ -66,7 +69,7 @@ public class FactionCommand extends VanillaCommand {
                     break;
                 case "create":
                 case "make":
-                    if (GalacyHCF.playersManager.inFaction((GPlayer) sender)) {
+                    if (((GPlayer) sender).factionId != 0) {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "Please leave your faction before doing this!");
 
                         break;
@@ -95,30 +98,69 @@ public class FactionCommand extends VanillaCommand {
                     break;
                 case "disband":
                 case "delete":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                        if (faction.leaderId == ((GPlayer) sender).xuid) {
+                            faction.disband();
+                            sender.sendMessage(Utils.prefix + TextFormat.GREEN + "Your faction was successfully disbanded.");
+                        } else sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
+                    }
+
                     break;
                 case "leave":
                 case "quit":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                        if (faction.leaderId == ((GPlayer) sender).xuid) {
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You have to set a new leader before leaving!");
+                        } else {
+                            if (faction.createdAt.before(new Date(System.currentTimeMillis() - (1000 * 60 * 60 * 24)))) {
+                                ((GPlayer) sender).leaveFaction();
+                                sender.sendMessage(Utils.prefix + TextFormat.YELLOW + "You have successfully left your faction.");
+                                for (GPlayer player : faction.onlineMembers()) {
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + sender.getName() + " has left the faction.");
+                                }
+                            } else {
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "You have to wait at least 24 hours before disbanding your faction!");
+                            }
+                        }
+                    }
                     break;
                 case "home":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                        // TODO: Stop him from using home from enemy claim.
+                        if (faction.home.isEmpty()) sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set."); else {
+                            String[] pos = faction.home.split(",");
+                            // TODO: Start tp task
+                        }
+                    }
                     break;
                 case "stuck":
                     // TODO
                     break;
                 case "sethome":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "deposit":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+                        if (((GPlayer) sender).balance < 1) sender.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough money in your balance!"); else {
+
+                        }
+                    }
                     break;
                 case "info":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "chat":
                 case "c":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "who":
                     // TODO
@@ -127,20 +169,45 @@ public class FactionCommand extends VanillaCommand {
                     // TODO
                     break;
                 case "members":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "kick":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "invite":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+
+                    }
                     break;
                 case "accept":
                     // TODO
                     break;
                 case "leader":
                 case "setleader":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0) sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!"); else {
+                        if (args[1].isEmpty()) sender.sendMessage(Utils.prefix + TextFormat.RED + "/f setleader <player name>"); else {
+                            Player p = sender.getServer().getPlayerExact(args[1]);
+                            if (p instanceof GPlayer && p.isOnline()) {
+                                if (((GPlayer) p).factionId != ((GPlayer) sender).factionId) {
+                                    sender.sendMessage(Utils.prefix + TextFormat.RED + "He's not in the same faction as you!");
+
+                                    break;
+                                }
+                                Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                                if (faction.leaderId == ((GPlayer) sender).xuid) {
+                                    faction.updateLeader((GPlayer) p);
+                                    sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully updated the leader of your faction");
+                                    for (GPlayer player : faction.onlineMembers()) {
+                                        player.sendMessage(Utils.prefix + TextFormat.GREEN + p.getName() + " is the new faction leader!");
+                                    }
+                                } else sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
+                            }
+                        }
+                    }
                     break;
                 case "deny":
                     // TODO
@@ -149,6 +216,4 @@ public class FactionCommand extends VanillaCommand {
         }
         return false;
     }
-
-
 }

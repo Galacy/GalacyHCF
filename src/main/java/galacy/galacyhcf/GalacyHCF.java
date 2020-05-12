@@ -2,10 +2,9 @@ package galacy.galacyhcf;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
-import galacy.galacyhcf.managers.CommandManager;
+import galacy.galacyhcf.managers.CommandsManager;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.FactionsManager;
-import galacy.galacyhcf.managers.PlayersManager;
 import galacy.galacyhcf.providers.MySQL;
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -14,9 +13,7 @@ public class GalacyHCF extends PluginBase {
     public static GalacyHCF instance;
     public static Dotenv dotenv;
     public static FactionsManager factionsManager;
-    public static PlayersManager playersManager;
-
-    public MySQL mysql;
+    public static MySQL mysql;
 
     @Override
     public void onEnable() {
@@ -32,10 +29,7 @@ public class GalacyHCF extends PluginBase {
 
         // Managers
         factionsManager = new FactionsManager(mysql);
-        playersManager = new PlayersManager(mysql);
-
-        // Commands
-        CommandManager.register();
+        new CommandsManager();
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
