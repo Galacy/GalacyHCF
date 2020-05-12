@@ -7,6 +7,7 @@ import cn.nukkit.command.data.CommandParameter;
 import cn.nukkit.command.defaults.VanillaCommand;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.utils.Utils;
 
 public class FactionCommand extends VanillaCommand {
@@ -42,10 +43,9 @@ public class FactionCommand extends VanillaCommand {
 
     @Override
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-        if (sender instanceof Player) { //Replace with future custom Player class
-            Player player = (Player) sender;
+        if (sender instanceof GPlayer) {
             if (args.length == 0) {
-                player.sendMessage(Utils.prefix + TextFormat.RED + "Invalid argument ! use the command /f help to see the commands.");
+                sender.sendMessage(Utils.prefix + TextFormat.RED + "Invalid argument ! use the command /f help to see the commands.");
             }
             switch (args[0].toLowerCase()) {
 //                case "freeze":
@@ -53,9 +53,9 @@ public class FactionCommand extends VanillaCommand {
 //                    break;
                 case "help":
                 case "?":
-                    player.sendMessage(Utils.prefix + TextFormat.RED + "Faction commands list!");
+                    sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction commands list!");
                     for (String help : helpList) {
-                        player.sendMessage(TextFormat.GREEN + "-" + TextFormat.GRAY + help);
+                        sender.sendMessage(TextFormat.GREEN + "-" + TextFormat.GRAY + help);
                     }
                     break;
 //                case "setdtr":
@@ -66,7 +66,7 @@ public class FactionCommand extends VanillaCommand {
                     break;
                 case "create":
                 case "make":
-                    if (GalacyHCF.playersManager.inFaction((Player) sender)) {
+                    if (GalacyHCF.playersManager.inFaction((GPlayer) sender)) {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "Please leave your faction before doing this!");
 
                         break;
@@ -88,7 +88,7 @@ public class FactionCommand extends VanillaCommand {
                             break;
                         }
 
-                        GalacyHCF.factionsManager.createFaction(args[1], ((Player) sender));
+                        GalacyHCF.factionsManager.createFaction(args[1], ((GPlayer) sender));
                         GalacyHCF.instance.getServer().broadcastMessage("Faction "+args[1]+" was just created by "+sender.getName());
                     } else sender.sendMessage(Utils.prefix + TextFormat.RED + "/f create <faction name>");
 

@@ -1,6 +1,6 @@
 package galacy.galacyhcf.managers;
 
-import cn.nukkit.Player;
+import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.providers.MySQL;
 
 public class PlayersManager {
@@ -11,7 +11,7 @@ public class PlayersManager {
         mysql = db;
     }
 
-    public boolean inFaction(Player player) {
+    public boolean inFaction(GPlayer player) {
         // TODO
         return false;
     }
