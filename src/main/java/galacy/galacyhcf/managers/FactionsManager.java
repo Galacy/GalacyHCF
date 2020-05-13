@@ -10,8 +10,11 @@ import galacy.galacyhcf.utils.Utils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Objects;
 
 public class FactionsManager {
+    public static final int MaxMembers = GalacyHCF.dotenv.get("MAX_MEMBERS") != null ? Integer.parseInt(Objects.requireNonNull(GalacyHCF.dotenv.get("MAX_MEMBERS")), 50) : 15;
+
     public MySQL mysql;
 
     public FactionsManager(MySQL db) {
@@ -22,7 +25,7 @@ public class FactionsManager {
         String sql = SQLStatements.factionByName.replace("$name", name);
         try {
             ResultSet results = mysql.query(sql);
-            if(results.next()) return true;
+            if (results.next()) return true;
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues finding faction by name: " + e);
         }

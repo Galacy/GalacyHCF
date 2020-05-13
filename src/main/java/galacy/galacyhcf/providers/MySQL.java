@@ -3,7 +3,10 @@ package galacy.galacyhcf.providers;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class MySQL {
 
@@ -27,7 +30,8 @@ public class MySQL {
 
     public void close() {
         try {
-            if(connection.isClosed()) return; else connection.close();
+            if (connection.isClosed()) return;
+            else connection.close();
             GalacyHCF.instance.getLogger().info(TextFormat.AQUA + "[MySQL]: The connection to the database was terminated.");
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Could not close the database connection: " + e);

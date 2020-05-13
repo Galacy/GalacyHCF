@@ -2,10 +2,13 @@ package galacy.galacyhcf;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
-import galacy.galacyhcf.managers.CommandsManager;
 import galacy.galacyhcf.listerners.EventsListener;
+import galacy.galacyhcf.managers.CommandsManager;
 import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.providers.MySQL;
+import galacy.galacyhcf.tasks.CombatTask;
+import galacy.galacyhcf.tasks.ScoreboardTask;
+import galacy.galacyhcf.tasks.TeleportTask;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class GalacyHCF extends PluginBase {
@@ -18,7 +21,7 @@ public class GalacyHCF extends PluginBase {
     @Override
     public void onEnable() {
         // Loading resources
-        if(getDataFolder().mkdir()) {
+        if (getDataFolder().mkdir()) {
             getLogger().info("Successfully created data folder.");
         }
 
@@ -30,6 +33,11 @@ public class GalacyHCF extends PluginBase {
         // Managers
         factionsManager = new FactionsManager(mysql);
         new CommandsManager();
+
+        // Tasks
+        getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 20);
+        getServer().getScheduler().scheduleRepeatingTask(new TeleportTask(this), 20);
+        getServer().getScheduler().scheduleRepeatingTask(new CombatTask(this), 20);
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);

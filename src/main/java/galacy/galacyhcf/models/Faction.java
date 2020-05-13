@@ -30,7 +30,7 @@ public class Faction {
         String sql = SQLStatements.factionById.replace("$id", String.valueOf(factionId));
         try {
             ResultSet result = mysql.query(sql);
-            if(result.next()) {
+            if (result.next()) {
                 id = factionId;
                 createdAt = result.getDate("created_at");
                 updatedAt = result.getDate("updated_at");
@@ -52,7 +52,7 @@ public class Faction {
         String sql = SQLStatements.factionByName.replace("$name", factionName);
         try {
             ResultSet result = mysql.query(sql);
-            if(result.next()) {
+            if (result.next()) {
                 id = result.getInt("id");
                 createdAt = result.getDate("created_at");
                 updatedAt = result.getDate("updated_at");
@@ -95,7 +95,7 @@ public class Faction {
     }
 
     public List<GPlayer> onlineMembers() {
-        List<GPlayer> players = new ArrayList<GPlayer>();
+        List<GPlayer> players = new ArrayList<>();
 
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
@@ -117,5 +117,34 @@ public class Faction {
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting faction by name: " + e);
         }
+    }
+
+    public void updateBalance(int newBalance) {
+        try {
+            GalacyHCF.mysql.exec(SQLStatements.updateFactionBalanceById.
+                    replace("$balance", String.valueOf(newBalance)).
+                    replace("$id", String.valueOf(id)).
+                    replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
+            balance = newBalance;
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction balance: " + e);
+        }
+    }
+
+    public ArrayList<String> members() {
+        ArrayList<String> members = new ArrayList<>();
+
+        try {
+            ResultSet results = GalacyHCF.mysql.query(SQLStatements.factionMembersById.
+                    replace("$faction_id", String.valueOf(id)));
+            while (results.next()) {
+                members.add(results.getString("username"));
+            }
+            results.close();
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction balance: " + e);
+        }
+
+        return members;
     }
 }
