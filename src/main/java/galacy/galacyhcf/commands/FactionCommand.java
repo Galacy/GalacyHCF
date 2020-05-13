@@ -36,7 +36,7 @@ public class FactionCommand extends VanillaCommand {
 
     public FactionCommand(String name) {
         super(name, "Factions Command", "/f help");
-        setAliases(new String[]{"faction", "hcf", "fac", "factions", "team", "t", "hardcorefaction", "hardcorefactions"});
+        setAliases(new String[]{"faction", "hcf", "fac", "factions", "team", "f", "hardcorefaction", "hardcorefactions"});
         commandParameters.put("default",
                 new CommandParameter[]{
                         new CommandParameter("argument", CommandParamType.STRING, true),

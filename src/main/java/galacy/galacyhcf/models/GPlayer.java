@@ -22,29 +22,19 @@ public class GPlayer extends Player {
     public int balance;
     public int factionId;
 
+    // Local cached data
+    public boolean homeTeleport;
+    public boolean stuckTeleport;
+    public int teleportTime;
+
+
     public GPlayer(SourceInterface interfaz, Long clientID, String ip, int port) {
         super(interfaz, clientID, ip, port);
-        loadData();
-        if (!username.equals(dbUsername)) {
-            try {
-                String currentTime = Utils.dateFormat.format(new java.util.Date());
-                String sql = SQLStatements.updatePlayerUsernameById.
-                        replace("$updated_at", currentTime).
-                        replace("$xuid", getLoginChainData().getXUID()).
-                        replace("$username", username);
-
-                GalacyHCF.mysql.exec(sql);
-                GalacyHCF.instance.getLogger().info(dbUsername + " has changed his name to " + username);
-            }  catch (SQLException e) {
-                GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues changing player username: " + e);
-            }
-        }
     }
 
     public void loadData() {
         try {
-            String sql = SQLStatements.playerById.replace("$xuid", getLoginChainData().getXUID());
-            ResultSet result = GalacyHCF.mysql.query(sql);
+            ResultSet result = GalacyHCF.mysql.query(SQLStatements.playerById.replace("$xuid", getLoginChainData().getXUID()));
             if(result.next()) {
                 // Currently USELESS so I commented it: rowId = result.getInt("id");
                 createdAt = result.getDate("created_at");
@@ -58,16 +48,14 @@ public class GPlayer extends Player {
                 GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "[MySQL]: Couldn't find the player in the database, creating a new one.");
                 try {
                     String currentTime = Utils.dateFormat.format(new java.util.Date());
-                    sql = SQLStatements.createPlayer.
+                    GalacyHCF.mysql.exec(SQLStatements.createPlayer.
                             replace("$created_at", currentTime).
                             replace("$updated_at", currentTime).
                             replace("$username", username).
                             replace("$xuid", getLoginChainData().getXUID()).
                             replace("$rank", "0").
                             replace("$balance", "0").
-                            replace("$faction_id", "0");
-
-                    GalacyHCF.mysql.exec(sql);
+                            replace("$faction_id", "0"));
                 } catch (SQLException e) {
                     GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues creating a new player: " + e);
                 }
