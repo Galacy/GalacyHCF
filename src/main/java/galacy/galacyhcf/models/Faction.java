@@ -23,7 +23,7 @@ public class Faction {
     public int balance;
     public int dtr;
     public String home;
-    public int leaderId;
+    public String leaderId;
 
     public Faction(MySQL db, int factionId) {
         mysql = db;
@@ -38,7 +38,7 @@ public class Faction {
                 balance = result.getInt("balance");
                 dtr = result.getInt("dtr");
                 home = result.getString("home");
-                leaderId = result.getInt("leader_id");
+                leaderId = result.getString("leader_id");
             } else {
                 GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Couldn't find the faction.");
             }
@@ -60,7 +60,7 @@ public class Faction {
                 balance = result.getInt("balance");
                 dtr = result.getInt("dtr");
                 home = result.getString("home");
-                leaderId = result.getInt("leader_id");
+                leaderId = result.getString("leader_id");
             } else {
                 GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Couldn't find the faction.");
             }
@@ -96,10 +96,10 @@ public class Faction {
         String currentTime = Utils.dateFormat.format(new java.util.Date());
         try {
             mysql.exec(SQLStatements.removeAllMembersById.
-                    replace("$faction_id", name).
+                    replace("$faction_id", String.valueOf(id)).
                     replace("$updated_at", currentTime));
         } catch (SQLException e) {
-            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting faction by name: " + e);
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues removing members after disband: " + e);
         }
 
         for (GPlayer player : onlineMembers()) {
@@ -122,7 +122,7 @@ public class Faction {
     public void updateLeader(GPlayer player) {
         String currentTime = Utils.dateFormat.format(new java.util.Date());
         String sql = SQLStatements.updateLeaderById.
-                replace("$leader_id", String.valueOf(player.xuid)).
+                replace("$leader_id", player.xuid).
                 replace("$updated_at", currentTime).
                 replace("$id", String.valueOf(id));
         try {

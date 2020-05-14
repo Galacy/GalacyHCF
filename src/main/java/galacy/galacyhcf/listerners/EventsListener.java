@@ -11,11 +11,7 @@ import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
-import galacy.galacyhcf.providers.SQLStatements;
-import galacy.galacyhcf.scoreboardapi.ScoreboardAPI;
 import galacy.galacyhcf.utils.Utils;
-
-import java.sql.SQLException;
 
 public class EventsListener implements Listener {
 
@@ -30,38 +26,11 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onLogin(PlayerLoginEvent event) {
-        Player p = event.getPlayer();
-        if (p instanceof GPlayer) {
-            ((GPlayer) p).loadData();
-            if (!p.getName().equals(((GPlayer) p).dbUsername)) {
-                try {
-                    String currentTime = Utils.dateFormat.format(new java.util.Date());
-
-                    GalacyHCF.mysql.exec(SQLStatements.updatePlayerUsernameById.
-                            replace("$updated_at", currentTime).
-                            replace("$xuid", p.getLoginChainData().getXUID()).
-                            replace("$username", p.getName()));
-                    GalacyHCF.instance.getLogger().info(((GPlayer) p).dbUsername + " has changed his name to " + p.getName());
-                } catch (SQLException e) {
-                    GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues changing player username: " + e);
-                }
-            }
-        }
-
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage("");
         Player player = event.getPlayer();
-        if (player instanceof GPlayer) {
-            ((GPlayer) player).sb = new ScoreboardAPI.Companion.Builder().build();
-            ((GPlayer) player).sb.setDisplayName(Utils.prefix + TextFormat.RESET + TextFormat.GRAY + " (Map 0.5)");
-            ((GPlayer) player).sb.setScore(1, TextFormat.GRAY + "------------------", 1);
-
-            ((GPlayer) player).sb.addPlayer(event.getPlayer());
-        }
+        if (player instanceof GPlayer)
+            ((GPlayer) player).loadData();
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -79,11 +48,13 @@ public class EventsListener implements Listener {
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
-            if (!((GPlayer) player).moved) {
-                player.sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
-                ((GPlayer) player).homeTeleport = false;
-                ((GPlayer) player).stuckTeleport = false;
-                ((GPlayer) player).moved = true;
+            if (((GPlayer) player).homeTeleport || ((GPlayer) player).stuckTeleport) {
+                if (!((GPlayer) player).moved) {
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
+                    ((GPlayer) player).homeTeleport = false;
+                    ((GPlayer) player).stuckTeleport = false;
+                    ((GPlayer) player).moved = true;
+                }
             }
         }
     }
@@ -98,25 +69,24 @@ public class EventsListener implements Listener {
                     event.setCancelled(true);
                     ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
                 } else {
-                    ((GPlayer) player).sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
-                    ((GPlayer) player).homeTeleport = false;
-                    ((GPlayer) player).stuckTeleport = false;
-                    ((GPlayer) player).moved = true;
-                    ((GPlayer) player).fightTime = 30;
+                    checkTeleport((GPlayer) player);
 
-                    ((GPlayer) damager).sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
-                    ((GPlayer) damager).homeTeleport = false;
-                    ((GPlayer) damager).stuckTeleport = false;
-                    ((GPlayer) damager).moved = true;
-                    ((GPlayer) damager).fightTime = 30;
+                    checkTeleport((GPlayer) damager);
                 }
             } else {
-                ((GPlayer) player).sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
-                ((GPlayer) player).homeTeleport = false;
-                ((GPlayer) player).stuckTeleport = false;
-                ((GPlayer) player).moved = true;
-                ((GPlayer) player).fightTime = 30;
+                checkTeleport((GPlayer) player);
             }
+        }
+
+    }
+
+    public void checkTeleport(GPlayer player) {
+        if (player.homeTeleport || player.stuckTeleport) {
+            player.sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
+            player.homeTeleport = false;
+            player.stuckTeleport = false;
+            player.moved = true;
+            player.fightTime = 30;
         }
     }
 

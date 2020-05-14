@@ -73,7 +73,7 @@ public class FactionCommand extends VanillaCommand {
 
                         break;
                     }
-                    if (args[1] != null) {
+                    if (args.length == 2) {
                         if (args[1].length() > 15) {
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction name too big!");
 
@@ -102,7 +102,7 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        if (faction.leaderId != ((GPlayer) sender).xuid)
+                        if (!faction.leaderId.equals(((GPlayer) sender).xuid))
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
                         else {
                             faction.disband();
@@ -117,7 +117,7 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        if (faction.leaderId == ((GPlayer) sender).xuid) {
+                        if (faction.leaderId.equals(((GPlayer) sender).xuid)) {
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You have to set a new leader before leaving!");
                         } else {
                             if (faction.createdAt.before(new Date(System.currentTimeMillis() - (1000 * 60 * 60 * 24)))) {
@@ -141,14 +141,23 @@ public class FactionCommand extends VanillaCommand {
                         if (((GPlayer) sender).fightTime != 0)
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not do this while you're in combat.");
                         else {
-                            if (faction.home.isEmpty())
+                            if (faction.home == null)
                                 sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
                             else {
-                                String[] aa = faction.home.split(",");
-                                ((GPlayer) sender).moved = false;
-                                ((GPlayer) sender).teleportTime = 10;
-                                ((GPlayer) sender).teleportPosition = new Position(Integer.getInteger(aa[0]), Integer.getInteger(aa[1]), Integer.getInteger(aa[2]), sender.getServer().getDefaultLevel());
-                                sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You'll be teleported to your faction home in 10 seconds... DON'T MOVE!");
+                                if (faction.home.equals(""))
+                                    sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                else {
+                                    String[] aa = faction.home.split(",");
+                                    if (aa.length != 3)
+                                        sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                    else {
+                                        ((GPlayer) sender).homeTeleport = true;
+                                        ((GPlayer) sender).moved = false;
+                                        ((GPlayer) sender).teleportTime = 10;
+                                        ((GPlayer) sender).teleportPosition = new Position(Integer.parseInt(aa[0]), Integer.parseInt(aa[1]), Integer.parseInt(aa[2]), sender.getServer().getDefaultLevel());
+                                        sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You'll be teleported to your faction home in 10 seconds... DON'T MOVE!");
+                                    }
+                                }
                             }
                         }
                     }
@@ -161,7 +170,7 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        if (faction.leaderId != ((GPlayer) sender).xuid)
+                        if (!faction.leaderId.equals(((GPlayer) sender).xuid))
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
                         else {
                             if (!((GPlayer) sender).getLevel().getName().equals(sender.getServer().getDefaultLevel().getName()))
@@ -188,7 +197,7 @@ public class FactionCommand extends VanillaCommand {
                         if (((GPlayer) sender).balance < 1)
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough money in your balance!");
                         else {
-                            if (args[1].isEmpty())
+                            if (args.length == 1)
                                 sender.sendMessage(Utils.prefix + TextFormat.RED + "/f deposit <amount>");
                             else {
                                 int newBalance = Integer.parseInt(args[1]);
@@ -205,7 +214,7 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "info":
-                    if (args[1].isEmpty()) {
+                    if (args.length == 1) {
                         if (((GPlayer) sender).factionId == 0)
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                         else {
@@ -237,7 +246,7 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "who":
-                    if (args[1].isEmpty())
+                    if (args.length == 1)
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "/f who <player>");
                     else {
                         Player player = sender.getServer().getPlayer(args[1]);
@@ -260,10 +269,10 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        if (faction.leaderId != ((GPlayer) sender).xuid)
+                        if (!faction.leaderId.equals(((GPlayer) sender).xuid))
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
                         else {
-                            if (args[1].isEmpty())
+                            if (args.length == 1)
                                 sender.sendMessage(Utils.prefix + TextFormat.RED + "/f withdraw <amount>");
                             else {
                                 int newBalance = Integer.parseInt(args[1]);
@@ -299,11 +308,11 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        if (faction.leaderId != ((GPlayer) sender).xuid)
+                        if (!faction.leaderId.equals(((GPlayer) sender).xuid))
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
                         else {
-                            if (args[1].isEmpty())
-                                sender.sendMessage(Utils.prefix + TextFormat.RED + "/f kick <member name>");
+                            if (args.length == 1)
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "/f kick <member>");
                             else {
                                 Player member = sender.getServer().getPlayer(args[1]);
                                 if (member == null)
@@ -328,11 +337,11 @@ public class FactionCommand extends VanillaCommand {
                     if (((GPlayer) sender).factionId == 0)
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
-                        if (args[1].isEmpty())
-                            sender.sendMessage(Utils.prefix + TextFormat.RED + "/f invite <player name>");
+                        if (args.length == 1)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "/f invite <player>");
                         else {
                             Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                            if (faction.leaderId != ((GPlayer) sender).xuid)
+                            if (!faction.leaderId.equals(((GPlayer) sender).xuid))
                                 sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
                             else {
                                 if (faction.members().toArray().length >= FactionsManager.MaxMembers)
@@ -382,8 +391,8 @@ public class FactionCommand extends VanillaCommand {
                     if (((GPlayer) sender).factionId == 0)
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
-                        if (args[1].isEmpty())
-                            sender.sendMessage(Utils.prefix + TextFormat.RED + "/f setleader <player name>");
+                        if (args.length == 1)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "/f leader <player name>");
                         else {
                             Player p = sender.getServer().getPlayerExact(args[1]);
                             if (p == null)
@@ -396,7 +405,7 @@ public class FactionCommand extends VanillaCommand {
                                         break;
                                     }
                                     Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                                    if (faction.leaderId == ((GPlayer) sender).xuid) {
+                                    if (faction.leaderId.equals(((GPlayer) sender).xuid)) {
                                         faction.updateLeader((GPlayer) p);
                                         sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully updated the leader of your faction");
                                         for (GPlayer player : faction.onlineMembers()) {
@@ -418,10 +427,10 @@ public class FactionCommand extends VanillaCommand {
         List<GPlayer> onlineMembers = faction.onlineMembers();
         StringBuilder onlineNames = new StringBuilder();
         for (int i = 0; i < onlineMembers.toArray().length; i++) {
-            if (i == onlineMembers.toArray().length)
-                onlineNames.append(onlineMembers.get(i)).append(".");
+            if (i == (onlineMembers.toArray().length + 1))
+                onlineNames.append(onlineMembers.get(i).getName()).append(".");
             else
-                onlineNames.append(onlineMembers.get(i)).append(", ");
+                onlineNames.append(onlineMembers.get(i).getName()).append(", ");
         }
         ArrayList<String> members = faction.members();
 

@@ -19,14 +19,14 @@ public class GPlayer extends Player {
     public Date createdAt;
     public Date updatedAt;
     public String dbUsername;
-    public int xuid;
+    public String xuid;
     public int rank;
     public int balance;
     public int factionId;
 
     // Local cached data
-    public boolean homeTeleport;
-    public boolean stuckTeleport;
+    public boolean homeTeleport = false;
+    public boolean stuckTeleport = false;
     public int teleportTime;
     public Position teleportPosition;
 
@@ -45,10 +45,25 @@ public class GPlayer extends Player {
                 createdAt = result.getDate("created_at");
                 updatedAt = result.getDate("updated_at");
                 dbUsername = result.getString("username");
-                xuid = result.getInt("xuid");
+                xuid = result.getString("xuid");
                 rank = result.getInt("rank");
                 balance = result.getInt("balance");
                 factionId = result.getInt("faction_id");
+
+                if (!getName().equals(dbUsername)) {
+                    try {
+                        String currentTime = Utils.dateFormat.format(new java.util.Date());
+
+                        GalacyHCF.mysql.exec(SQLStatements.updatePlayerUsernameById.
+                                replace("$updated_at", currentTime).
+                                replace("$xuid", getLoginChainData().getXUID()).
+                                replace("$username", getName()));
+                        GalacyHCF.instance.getLogger().info(dbUsername + " has changed his name to " + getName());
+                        dbUsername = getName();
+                    } catch (SQLException e) {
+                        GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues changing player username: " + e);
+                    }
+                }
             } else {
                 GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "[MySQL]: Couldn't find the player in the database, creating a new one.");
                 try {
@@ -61,6 +76,8 @@ public class GPlayer extends Player {
                             replace("$rank", "0").
                             replace("$balance", "0").
                             replace("$faction_id", "0"));
+
+                    loadData();
                 } catch (SQLException e) {
                     getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues creating a new player: " + e);
                 }
@@ -80,7 +97,7 @@ public class GPlayer extends Player {
         try {
             GalacyHCF.mysql.exec(SQLStatements.setPlayerFactionById.
                     replace("$faction_id", "0").
-                    replace("$xuid", String.valueOf(xuid)).
+                    replace("$xuid", xuid).
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
             factionId = 0;
         } catch (SQLException e) {
@@ -92,7 +109,7 @@ public class GPlayer extends Player {
         try {
             GalacyHCF.mysql.exec(SQLStatements.updatePlayerBalanceById.
                     replace("$balance", String.valueOf(newBalance)).
-                    replace("$xuid", String.valueOf(xuid)).
+                    replace("$xuid", xuid).
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
             balance = newBalance;
         } catch (SQLException e) {
@@ -109,11 +126,11 @@ public class GPlayer extends Player {
         try {
             GalacyHCF.mysql.exec(SQLStatements.setPlayerFactionById.
                     replace("$faction_id", String.valueOf(newFactionId)).
-                    replace("$xuid", String.valueOf(xuid)).
+                    replace("$xuid", xuid).
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
-            factionId = 0;
+            factionId = newFactionId;
         } catch (SQLException e) {
-            getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues removing player from faction: " + e);
+            getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues adding player to faction: " + e);
         }
     }
 

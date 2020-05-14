@@ -19,9 +19,9 @@ public class MySQL {
             if (connection != null) {
                 GalacyHCF.instance.getLogger().info(TextFormat.AQUA + "[MySQL]: Connection to the established database.");
 
-                exec("CREATE TABLE IF NOT EXISTS `players` (`id` int UNIQUE PRIMARY KEY AUTO_INCREMENT,`created_at` datetime,`updated_at` datetime,`username` varchar(255),`xuid` int,`rank` int,`balance` int,`faction_id` int);");
-                exec("CREATE TABLE IF NOT EXISTS `factions` (`id` int UNIQUE PRIMARY KEY AUTO_INCREMENT,`created_at` datetime,`updated_at` datetime,`name` varchar(255),`balance` int,`dtr` int,`home` varchar(255),`leader_id` int);");
-                exec("CREATE TABLE IF NOT EXISTS `claims` (`id` int UNIQUE PRIMARY KEY AUTO_INCREMENT,`created_at` datetime,`updated_at` datetime,`type` int,`faction_id` int,`faction_name` varchar(255),`x1` int,`x2` int,`z1` int,`z2` int);");
+                exec(SQLStatements.createPlayersTable);
+                exec(SQLStatements.createFactionsTable);
+                exec(SQLStatements.createClaimsTable);
             }
         } catch (ClassNotFoundException | SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Could not connect to the database: " + e);
@@ -38,8 +38,8 @@ public class MySQL {
         }
     }
 
-    public Boolean exec(String query) throws SQLException {
-        return connection.createStatement().execute(query);
+    public void exec(String query) throws SQLException {
+        connection.createStatement().execute(query);
     }
 
     public ResultSet query(String query) throws SQLException {
