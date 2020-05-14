@@ -69,22 +69,35 @@ public class Faction {
         }
     }
 
+    public String leaderName() {
+        try {
+            ResultSet result = mysql.query(SQLStatements.playerByFactionId.replace("$faction_id", String.valueOf(id)));
+            if (result.next()) {
+                return result.getString("username");
+            } else {
+                return "ERROR";
+            }
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues getting leader name: " + e);
+        }
+
+        return "ERROR";
+    }
+
     public void disband() {
         // TODO: Remove claims too.
-        String sql = SQLStatements.disbandFactionByName.replace("$name", name);
         try {
-            mysql.exec(sql);
+            mysql.exec(SQLStatements.disbandFactionByName.replace("$name", name));
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting faction by name: " + e);
         }
 
         // remove faction members
         String currentTime = Utils.dateFormat.format(new java.util.Date());
-        sql = SQLStatements.removeAllMembersById.
-                replace("$faction_id", name).
-                replace("$updated_at", currentTime);
         try {
-            mysql.exec(sql);
+            mysql.exec(SQLStatements.removeAllMembersById.
+                    replace("$faction_id", name).
+                    replace("$updated_at", currentTime));
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting faction by name: " + e);
         }
@@ -142,9 +155,21 @@ public class Faction {
             }
             results.close();
         } catch (SQLException e) {
-            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction balance: " + e);
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues getting faction members: " + e);
         }
 
         return members;
+    }
+
+    public void updateHome(int x, int y, int z) {
+        home = x + "," + y + "," + z;
+        try {
+            GalacyHCF.mysql.exec(SQLStatements.updateHomeById.
+                    replace("$id", String.valueOf(id)).
+                    replace("$home", home).
+                    replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction balance: " + e);
+        }
     }
 }

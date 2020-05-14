@@ -12,9 +12,11 @@ import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.utils.Utils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class FactionCommand extends VanillaCommand {
     public static final String[] helpList = new String[]{
@@ -54,9 +56,6 @@ public class FactionCommand extends VanillaCommand {
                 sender.sendMessage(Utils.prefix + TextFormat.RED + "Wrong usage. You can do '/f help' to get a list of the commands.");
             }
             switch (args[0].toLowerCase()) {
-//                case "freeze":
-//
-//                    break;
                 case "help":
                 case "?":
                     sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction commands list!");
@@ -64,9 +63,6 @@ public class FactionCommand extends VanillaCommand {
                         sender.sendMessage(TextFormat.GREEN + "-" + TextFormat.GRAY + help);
                     }
                     break;
-//                case "setdtr":
-//
-//                    break;
                 case "claim":
                     // TODO
                     break;
@@ -164,7 +160,17 @@ public class FactionCommand extends VanillaCommand {
                     if (((GPlayer) sender).factionId == 0)
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
-
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                        if (faction.leaderId != ((GPlayer) sender).xuid)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
+                        else {
+                            if (!((GPlayer) sender).getLevel().getName().equals(sender.getServer().getDefaultLevel().getName()))
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "You can only set your home in the normal world.");
+                            else {
+                                faction.updateHome((int) ((GPlayer) sender).getX(), (int) ((GPlayer) sender).getY(), (int) ((GPlayer) sender).getZ());
+                                sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully updated your faction's home.");
+                            }
+                        }
                     }
                     break;
                 case "balance":
@@ -199,11 +205,22 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "info":
-                    if (((GPlayer) sender).factionId == 0)
-                        sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
-                    else {
-
+                    if (args[1].isEmpty()) {
+                        if (((GPlayer) sender).factionId == 0)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
+                        else {
+                            Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                            factionInfo(sender, faction);
+                        }
+                    } else {
+                        if (!GalacyHCF.factionsManager.factionExists(args[1]))
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "Faction does not exist.");
+                        else {
+                            Faction faction = new Faction(GalacyHCF.mysql, args[1]);
+                            factionInfo(sender, faction);
+                        }
                     }
+
                     break;
                 case "chat":
                 case "c":
@@ -220,7 +237,23 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "who":
-                    // TODO
+                    if (args[1].isEmpty())
+                        sender.sendMessage(Utils.prefix + TextFormat.RED + "/f who <player>");
+                    else {
+                        Player player = sender.getServer().getPlayer(args[1]);
+                        if (player == null)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "This player doesn't seem to be online!");
+                        else {
+                            if (player instanceof GPlayer) {
+                                if (((GPlayer) player).factionId == 0)
+                                    sender.sendMessage(Utils.prefix + TextFormat.YELLOW + player.getName() + " does not have a faction.");
+                                else {
+                                    Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
+                                    sender.sendMessage(Utils.prefix + TextFormat.YELLOW + player.getName() + "'s faction is: " + TextFormat.YELLOW + faction.name + ".");
+                                }
+                            }
+                        }
+                    }
                     break;
                 case "withdraw":
                     if (((GPlayer) sender).factionId == 0)
@@ -379,5 +412,23 @@ public class FactionCommand extends VanillaCommand {
             }
         }
         return false;
+    }
+
+    public void factionInfo(CommandSender sender, @NotNull Faction faction) {
+        List<GPlayer> onlineMembers = faction.onlineMembers();
+        StringBuilder onlineNames = new StringBuilder();
+        for (int i = 0; i < onlineMembers.toArray().length; i++) {
+            if (i == onlineMembers.toArray().length)
+                onlineNames.append(onlineMembers.get(i)).append(".");
+            else
+                onlineNames.append(onlineMembers.get(i)).append(", ");
+        }
+        ArrayList<String> members = faction.members();
+
+        sender.sendMessage(TextFormat.YELLOW + "Faction: " + TextFormat.BLUE + faction.name + TextFormat.GRAY + " [" + members.toArray().length + "/" + FactionsManager.MaxMembers + "]");
+        sender.sendMessage(TextFormat.YELLOW + "Online: " + TextFormat.GREEN + onlineNames + TextFormat.BLUE + "(" + onlineMembers.toArray().length + "/" + members.toArray().length + ")");
+        sender.sendMessage(TextFormat.YELLOW + "Leader: " + TextFormat.GREEN + faction.leaderName());
+        sender.sendMessage(TextFormat.YELLOW + "DTR: " + TextFormat.GREEN + faction.dtr + "/5");
+        sender.sendMessage(TextFormat.YELLOW + "Home: " + TextFormat.GREEN + faction.home);
     }
 }
