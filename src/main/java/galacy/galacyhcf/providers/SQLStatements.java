@@ -20,4 +20,7 @@ public class SQLStatements {
     public static final String updatePlayerUsernameById = "UPDATE players SET username='$username', updated_at='$updated_at' WHERE xuid='$xuid';";
     public static final String updateLeaderById = "UPDATE factions SET leader_id='$leader_id', updated_at='$updated_at' WHERE id=$id;";
     public static final String updateHomeById = "UPDATE factions SET home='$home', updated_at='$updated_at' WHERE id=$id;";
+    public static final String allClaims = "SELECT * FROM claims;";
+    public static final String createFactionClaim = "INSERT INTO claims(created_at, updated_at, type, faction_id, faction_name, x1, x2, z1, z2) VALUES ('$created_at', '$updated_at', $type, $faction_id, '$faction_name', $x1, $x2, $z1, $z2);";
+    public static final String deleteClaimsByFactionId = "DELETE FROM claims WHERE faction_id=$faction_id;";
 }

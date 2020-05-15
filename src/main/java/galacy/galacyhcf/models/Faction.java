@@ -85,14 +85,12 @@ public class Faction {
     }
 
     public void disband() {
-        // TODO: Remove claims too.
         try {
             mysql.exec(SQLStatements.disbandFactionByName.replace("$name", name));
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting faction by name: " + e);
         }
 
-        // remove faction members
         String currentTime = Utils.dateFormat.format(new java.util.Date());
         try {
             mysql.exec(SQLStatements.removeAllMembersById.
@@ -105,6 +103,8 @@ public class Faction {
         for (GPlayer player : onlineMembers()) {
             player.factionId = 0;
         }
+
+        GalacyHCF.claimsManager.deleteFactionClaims(id);
     }
 
     public List<GPlayer> onlineMembers() {

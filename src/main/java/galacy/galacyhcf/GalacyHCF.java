@@ -2,8 +2,10 @@ package galacy.galacyhcf;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
+import galacy.galacyhcf.commands.FactionCommand;
+import galacy.galacyhcf.commands.PingCommand;
 import galacy.galacyhcf.listerners.EventsListener;
-import galacy.galacyhcf.managers.CommandsManager;
+import galacy.galacyhcf.managers.ClaimsManager;
 import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.providers.MySQL;
 import galacy.galacyhcf.tasks.CombatTask;
@@ -16,6 +18,7 @@ public class GalacyHCF extends PluginBase {
     public static GalacyHCF instance;
     public static Dotenv dotenv;
     public static FactionsManager factionsManager;
+    public static ClaimsManager claimsManager;
     public static MySQL mysql;
 
     @Override
@@ -32,10 +35,15 @@ public class GalacyHCF extends PluginBase {
 
         // Managers
         factionsManager = new FactionsManager(mysql);
-        new CommandsManager();
+        claimsManager = new ClaimsManager(mysql);
+
+
+        // Commands
+        getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));
+        getServer().getCommandMap().register("GalacyHCF", new PingCommand("ping"));
 
         // Tasks
-        getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 20);
+        getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10);
         getServer().getScheduler().scheduleRepeatingTask(new TeleportTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new CombatTask(this), 20);
 

@@ -22,9 +22,8 @@ public class FactionsManager {
     }
 
     public Boolean factionExists(String name) {
-        String sql = SQLStatements.factionByName.replace("$name", name);
         try {
-            ResultSet results = mysql.query(sql);
+            ResultSet results = mysql.query(SQLStatements.factionByName.replace("$name", name));
             if (results.next()) return true;
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues finding faction by name: " + e);

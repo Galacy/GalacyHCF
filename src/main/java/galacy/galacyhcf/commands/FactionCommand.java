@@ -8,7 +8,9 @@ import cn.nukkit.command.defaults.VanillaCommand;
 import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.managers.FactionsManager;
+import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.utils.Utils;
@@ -64,7 +66,23 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "claim":
-                    // TODO
+                    if (((GPlayer) sender).factionId == 0)
+                        sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
+                    else {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                        if (!faction.leaderId.equals(((GPlayer) sender).xuid))
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not the leader of this faction!");
+                        else {
+                            if (((GPlayer) sender).claimProcess != null) {
+                                if (((GPlayer) sender).claimProcess.expired()) {
+                                    sender.sendMessage(Utils.prefix + TextFormat.RED + "You've already started claiming.");
+                                    break;
+                                }
+                            }
+                            ((GPlayer) sender).claimProcess = new ClaimProcess(Claim.factionClaim, (GPlayer) sender);
+                            sender.sendMessage(Utils.prefix + TextFormat.GREEN + "Claiming process start, please click on the first block!");
+                        }
+                    }
                     break;
                 case "create":
                 case "make":
@@ -136,26 +154,29 @@ public class FactionCommand extends VanillaCommand {
                     if (((GPlayer) sender).factionId == 0)
                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not in a faction!");
                     else {
-                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
-                        // TODO: Stop him from using home from enemy claim.
-                        if (((GPlayer) sender).fightTime != 0)
-                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not do this while you're in combat.");
+                        if (GalacyHCF.claimsManager.findClaim(((GPlayer) sender).getFloorX(), ((GPlayer) sender).getFloorZ()).factionId != ((GPlayer) sender).factionId)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not do this inside an enemy claim. Use /f stuck.");
                         else {
-                            if (faction.home == null)
-                                sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                            Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                            if (((GPlayer) sender).fightTime != 0)
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not do this while you're in combat.");
                             else {
-                                if (faction.home.equals(""))
+                                if (faction.home == null)
                                     sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
                                 else {
-                                    String[] aa = faction.home.split(",");
-                                    if (aa.length != 3)
+                                    if (faction.home.equals(""))
                                         sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
                                     else {
-                                        ((GPlayer) sender).homeTeleport = true;
-                                        ((GPlayer) sender).moved = false;
-                                        ((GPlayer) sender).teleportTime = 10;
-                                        ((GPlayer) sender).teleportPosition = new Position(Integer.parseInt(aa[0]), Integer.parseInt(aa[1]), Integer.parseInt(aa[2]), sender.getServer().getDefaultLevel());
-                                        sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You'll be teleported to your faction home in 10 seconds... DON'T MOVE!");
+                                        String[] aa = faction.home.split(",");
+                                        if (aa.length != 3)
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                        else {
+                                            ((GPlayer) sender).homeTeleport = true;
+                                            ((GPlayer) sender).moved = false;
+                                            ((GPlayer) sender).teleportTime = 10;
+                                            ((GPlayer) sender).teleportPosition = new Position(Integer.parseInt(aa[0]), Integer.parseInt(aa[1]), Integer.parseInt(aa[2]), sender.getServer().getDefaultLevel());
+                                            sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You'll be teleported to your faction home in 10 seconds... DON'T MOVE!");
+                                        }
                                     }
                                 }
                             }
@@ -163,7 +184,39 @@ public class FactionCommand extends VanillaCommand {
                     }
                     break;
                 case "stuck":
-                    // TODO
+                    Claim claim = GalacyHCF.claimsManager.findClaim(((GPlayer) sender).getFloorX(), ((GPlayer) sender).getFloorZ());
+                    if (claim == null)
+                        sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not inside an enemy faction claim, use /f home.");
+                    else {
+                        if (claim.factionId == ((GPlayer) sender).factionId)
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You're not inside an enemy faction claim, use /f home.");
+                        else {
+                            Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) sender).factionId);
+                            if (((GPlayer) sender).fightTime != 0)
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not do this while you're in combat.");
+                            else {
+                                if (faction.home == null)
+                                    sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                else {
+                                    if (faction.home.equals(""))
+                                        sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                    else {
+                                        String[] aa = faction.home.split(",");
+                                        if (aa.length != 3)
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have a home set.");
+                                        else {
+                                            ((GPlayer) sender).stuckTeleport = true;
+                                            ((GPlayer) sender).moved = false;
+                                            ((GPlayer) sender).teleportTime = 60;
+                                            ((GPlayer) sender).teleportPosition = new Position(Integer.parseInt(aa[0]), Integer.parseInt(aa[1]), Integer.parseInt(aa[2]), sender.getServer().getDefaultLevel());
+                                            sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You'll be teleported to your faction home in 1 minute... DON'T MOVE!");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     break;
                 case "sethome":
                     if (((GPlayer) sender).factionId == 0)
@@ -176,8 +229,13 @@ public class FactionCommand extends VanillaCommand {
                             if (!((GPlayer) sender).getLevel().getName().equals(sender.getServer().getDefaultLevel().getName()))
                                 sender.sendMessage(Utils.prefix + TextFormat.RED + "You can only set your home in the normal world.");
                             else {
-                                faction.updateHome((int) ((GPlayer) sender).getX(), (int) ((GPlayer) sender).getY(), (int) ((GPlayer) sender).getZ());
-                                sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully updated your faction's home.");
+                                Claim found = GalacyHCF.claimsManager.findClaim(((GPlayer) sender).getFloorX(), ((GPlayer) sender).getFloorZ());
+                                if (found != null && found.factionId != ((GPlayer) sender).factionId)
+                                    sender.sendMessage(Utils.prefix + TextFormat.RED + "You can only set your home inside of your faction's claim.");
+                                else {
+                                    faction.updateHome((int) ((GPlayer) sender).getX(), (int) ((GPlayer) sender).getY(), (int) ((GPlayer) sender).getZ());
+                                    sender.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully updated your faction's home.");
+                                }
                             }
                         }
                     }
@@ -295,7 +353,7 @@ public class FactionCommand extends VanillaCommand {
                         ArrayList<String> members = faction.members();
                         StringBuilder names = new StringBuilder();
                         for (int i = 0; i < members.toArray().length; i++) {
-                            if (i == members.toArray().length)
+                            if (i == (members.toArray().length + 1))
                                 names.append(members.get(i)).append(".");
                             else
                                 names.append(members.get(i)).append(", ");

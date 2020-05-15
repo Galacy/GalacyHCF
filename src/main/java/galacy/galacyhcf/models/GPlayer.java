@@ -3,8 +3,10 @@ package galacy.galacyhcf.models;
 import cn.nukkit.Player;
 import cn.nukkit.level.Position;
 import cn.nukkit.network.SourceInterface;
+import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.providers.SQLStatements;
 import galacy.galacyhcf.scoreboardapi.scoreboard.SimpleScoreboard;
 import galacy.galacyhcf.utils.Utils;
@@ -36,6 +38,7 @@ public class GPlayer extends Player {
     public int invitedTo = 0;
     public SimpleScoreboard sb;
     public Chat chatType = Chat.Public;
+    public ClaimProcess claimProcess;
 
     public void loadData() {
         try {
@@ -131,6 +134,25 @@ public class GPlayer extends Player {
             factionId = newFactionId;
         } catch (SQLException e) {
             getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues adding player to faction: " + e);
+        }
+    }
+
+    public void buildPillar(int x, int y, int z, int firstBlockId, int secondBlockId) {
+        int blocks = 0;
+        for (int i = y; i < 128; i++) {
+            UpdateBlockPacket packet = new UpdateBlockPacket();
+            packet.x = x;
+            packet.y = i;
+            packet.z = z;
+            if (blocks == 4) {
+                packet.blockRuntimeId = firstBlockId;
+                blocks = 0;
+            } else {
+                packet.blockRuntimeId = secondBlockId;
+            }
+            dataPacket(packet);
+
+            blocks++;
         }
     }
 
