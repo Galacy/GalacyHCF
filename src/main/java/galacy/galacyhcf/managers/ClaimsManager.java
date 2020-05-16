@@ -23,6 +23,7 @@ public class ClaimsManager {
     }
 
     public void loadData() {
+        claims.clear();
         try {
             ResultSet results = mysql.query(SQLStatements.allClaims);
             while (results.next()) {
@@ -46,7 +47,7 @@ public class ClaimsManager {
 
     public boolean containsClaim(int x1, int x2, int z1, int z2) {
         for (Claim claim : claims) {
-            if ((claim.x1 <= x1 && claim.x2 >= x1) || (claim.x1 <= x2 && claim.x2 >= x2) || (claim.z1 <= z1 && claim.z2 >= z1) || (claim.z1 <= z2 && claim.z2 >= z2)) {
+            if (((claim.x1 <= x1 && claim.x2 >= x1) || (claim.x1 <= x2 && claim.x2 >= x2)) && ((claim.z1 <= z1 && claim.z2 >= z1) || (claim.z1 <= z2 && claim.z2 >= z2))) {
                 return true;
             }
         }
