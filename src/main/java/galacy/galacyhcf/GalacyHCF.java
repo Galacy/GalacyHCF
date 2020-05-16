@@ -31,7 +31,7 @@ public class GalacyHCF extends PluginBase {
         // Static variables
         dotenv = Dotenv.configure().directory(getDataFolder().getPath()).load();
         instance = this;
-        mysql = new MySQL(dotenv.get("DB_USERNAME"), dotenv.get("DB_PASSWORD"), dotenv.get("DB_NAME"));
+        mysql = new MySQL(dotenv.get("DB_HOST"), dotenv.get("DB_USERNAME"), dotenv.get("DB_PASSWORD"), dotenv.get("DB_NAME"));
 
         // Managers
         factionsManager = new FactionsManager(mysql);
