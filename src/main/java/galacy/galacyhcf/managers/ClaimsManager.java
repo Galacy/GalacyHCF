@@ -70,7 +70,7 @@ public class ClaimsManager {
         int x2 = Math.max((int) process.firstPos.x, (int) process.secondPos.x);
         int z2 = Math.max((int) process.firstPos.z, (int) process.secondPos.z);
 
-        process.price = ((x2 - x1) * (z2 - z1)) * 5;
+        process.price = ((x2 - x1 + 1) * (z2 - z1 + 1)) * 5;
 
         process.player.sendMessage(Utils.prefix + TextFormat.GREEN + "Your claim will cost your faction " + TextFormat.YELLOW + process.price + "$" + TextFormat.GREEN + ", write 'yes' or 'accept' in the chat to purchase it.");
     }

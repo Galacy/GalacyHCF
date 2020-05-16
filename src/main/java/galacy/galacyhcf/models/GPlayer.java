@@ -39,6 +39,7 @@ public class GPlayer extends Player {
     public SimpleScoreboard sb;
     public Chat chatType = Chat.Public;
     public ClaimProcess claimProcess;
+    public Claim claim;
 
     public void loadData() {
         try {
@@ -138,22 +139,24 @@ public class GPlayer extends Player {
     }
 
     public void buildPillar(int x, int y, int z, int firstBlockId, int secondBlockId) {
-        int blocks = 0;
-        for (int i = y; i < 128; i++) {
-            UpdateBlockPacket packet = new UpdateBlockPacket();
-            packet.x = x;
-            packet.y = i;
-            packet.z = z;
-            if (blocks == 4) {
-                packet.blockRuntimeId = firstBlockId;
-                blocks = 0;
-            } else {
-                packet.blockRuntimeId = secondBlockId;
-            }
-            dataPacket(packet);
+        GalacyHCF.instance.getServer().getScheduler().scheduleTask(GalacyHCF.instance, () -> {
+            int blocks = 0;
+            for (int i = y; i < 128; i++) {
+                UpdateBlockPacket packet = new UpdateBlockPacket();
+                packet.x = x;
+                packet.y = i;
+                packet.z = z;
+                if (blocks == 4) {
+                    packet.blockRuntimeId = firstBlockId;
+                    blocks = 0;
+                } else {
+                    packet.blockRuntimeId = secondBlockId;
+                }
+                dataPacket(packet);
 
-            blocks++;
-        }
+                blocks++;
+            }
+        }, true);
     }
 
     public enum Chat {

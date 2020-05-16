@@ -4,6 +4,7 @@ import java.sql.Date;
 
 public class Claim {
     public static final int factionClaim = 0;
+    public static final int spawnClaim = 1;
 
     public int id;
     public Date createdAt;
