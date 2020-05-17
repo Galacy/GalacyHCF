@@ -112,7 +112,7 @@ public class Faction {
 
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
-                players.add((GPlayer) player);
+                if (((GPlayer) player).factionId == id) players.add((GPlayer) player);
             }
         }
 

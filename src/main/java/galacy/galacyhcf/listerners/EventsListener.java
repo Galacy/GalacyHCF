@@ -9,6 +9,7 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
+import cn.nukkit.event.block.BlockPlaceEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.item.ItemID;
@@ -49,6 +50,11 @@ public class EventsListener implements Listener {
                 player.kill();
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void movedWrong(PlayerInvalidMoveEvent event) {
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -94,7 +100,10 @@ public class EventsListener implements Listener {
         if (player instanceof GPlayer) {
             Entity damager = event.getDamager();
             if (damager instanceof GPlayer) {
-                if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
+                if (((GPlayer) player).factionId == 0 || ((GPlayer) damager).factionId == 0) {
+                    checkTeleport((GPlayer) player);
+                    checkTeleport((GPlayer) damager);
+                } else if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
                     event.setCancelled(true);
                     ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
                 } else {
@@ -160,7 +169,7 @@ public class EventsListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
@@ -176,23 +185,45 @@ public class EventsListener implements Listener {
                 case BlockID.CHEST:
                 case BlockID.TRAPPED_CHEST:
                 case BlockID.ENDER_CHEST:
+                case BlockID.STONE_PRESSURE_PLATE:
+                case BlockID.WOODEN_PRESSURE_PLATE:
+                case BlockID.HEAVY_WEIGHTED_PRESSURE_PLATE:
+                case BlockID.LIGHT_WEIGHTED_PRESSURE_PLATE:
+                case BlockID.STONE_BUTTON:
+                case BlockID.WOODEN_BUTTON:
+                case BlockID.CRAFTING_TABLE:
+                case BlockID.ENCHANT_TABLE:
+                case BlockID.FURNACE:
+                case BlockID.HOPPER_BLOCK:
+                case BlockID.DROPPER:
+                case BlockID.DISPENSER:
+                case BlockID.TNT:
+                case BlockID.DARK_OAK_DOOR_BLOCK:
+                case BlockID.ACACIA_DOOR_BLOCK:
+                case BlockID.BIRCH_DOOR_BLOCK:
+                case BlockID.IRON_DOOR_BLOCK:
+                case BlockID.JUNGLE_DOOR_BLOCK:
+                case BlockID.SPRUCE_DOOR_BLOCK:
+                case BlockID.WOOD_DOOR_BLOCK:
                     editTerrainCheck(event, event.getBlock(), player);
                     break;
             }
-            switch (event.getItem().getId()) {
-                case ItemID.BUCKET:
-                case ItemID.DIAMOND_HOE:
-                case ItemID.GOLD_HOE:
-                case ItemID.IRON_HOE:
-                case ItemID.STONE_HOE:
-                case ItemID.WOODEN_HOE:
-                case ItemID.DIAMOND_SHOVEL:
-                case ItemID.GOLD_SHOVEL:
-                case ItemID.IRON_SHOVEL:
-                case ItemID.STONE_SHOVEL:
-                case ItemID.WOODEN_SHOVEL:
-                    editTerrainCheck(event, event.getBlock(), player);
-                    break;
+            if (event.getItem() != null) {
+                switch (event.getItem().getId()) {
+                    case ItemID.BUCKET:
+                    case ItemID.DIAMOND_HOE:
+                    case ItemID.GOLD_HOE:
+                    case ItemID.IRON_HOE:
+                    case ItemID.STONE_HOE:
+                    case ItemID.WOODEN_HOE:
+                    case ItemID.DIAMOND_SHOVEL:
+                    case ItemID.GOLD_SHOVEL:
+                    case ItemID.IRON_SHOVEL:
+                    case ItemID.STONE_SHOVEL:
+                    case ItemID.WOODEN_SHOVEL:
+                        editTerrainCheck(event, event.getBlock(), player);
+                        break;
+                }
             }
 
             if (((GPlayer) player).claimProcess != null) {
@@ -246,39 +277,47 @@ public class EventsListener implements Listener {
     public void editTerrainCheck(Event event, Block block, Player player) {
         if (player.isOp() && player.isCreative()) return;
         if (player instanceof GPlayer) {
+            System.out.println("this is for: " + event.getClass().toString());
+            System.out.println(block.getFloorX() + ":" + block.getFloorZ());
             Claim claim = GalacyHCF.claimsManager.findClaim(block.getFloorX(), block.getFloorZ());
             if (claim != null) {
+                System.out.println("here #6");
                 if (((GPlayer) player).factionId != claim.factionId) {
+                    System.out.println("here #5");
                     if (claim.type == Claim.factionClaim) {
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You can't edit terrain on " + claim.factionName + "'s claim.");
                     }
                     event.setCancelled(true);
+                    System.out.println("here #4");
                 }
+                System.out.println("here #3");
             } else {
                 if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {
                     event.setCancelled(true);
                     player.sendMessage(Utils.prefix + TextFormat.RED + "You have to be at least 300 blocks away from spawn to edit terrain.");
+                    System.out.println("here #2");
                 }
+                System.out.println("here");
             }
         } else event.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent event) {
         editTerrainCheck(event, event.getBlock(), event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPlace(BlockBreakEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlace(BlockPlaceEvent event) {
         editTerrainCheck(event, event.getBlock(), event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         editTerrainCheck(event, event.getBlockClicked(), event.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketFill(PlayerBucketFillEvent event) {
         editTerrainCheck(event, event.getBlockClicked(), event.getPlayer());
     }
