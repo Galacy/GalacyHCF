@@ -277,27 +277,19 @@ public class EventsListener implements Listener {
     public void editTerrainCheck(Event event, Block block, Player player) {
         if (player.isOp() && player.isCreative()) return;
         if (player instanceof GPlayer) {
-            System.out.println("this is for: " + event.getClass().toString());
-            System.out.println(block.getFloorX() + ":" + block.getFloorZ());
             Claim claim = GalacyHCF.claimsManager.findClaim(block.getFloorX(), block.getFloorZ());
             if (claim != null) {
-                System.out.println("here #6");
                 if (((GPlayer) player).factionId != claim.factionId) {
-                    System.out.println("here #5");
                     if (claim.type == Claim.factionClaim) {
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You can't edit terrain on " + claim.factionName + "'s claim.");
                     }
                     event.setCancelled(true);
-                    System.out.println("here #4");
                 }
-                System.out.println("here #3");
             } else {
                 if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {
                     event.setCancelled(true);
                     player.sendMessage(Utils.prefix + TextFormat.RED + "You have to be at least 300 blocks away from spawn to edit terrain.");
-                    System.out.println("here #2");
                 }
-                System.out.println("here");
             }
         } else event.setCancelled(true);
     }
