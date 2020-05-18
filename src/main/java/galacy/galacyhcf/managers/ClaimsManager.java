@@ -17,8 +17,8 @@ public class ClaimsManager {
     public MySQL mysql;
     public ArrayList<Claim> claims = new ArrayList<>();
 
-    public ClaimsManager(MySQL db) {
-        mysql = db;
+    public ClaimsManager(MySQL mysql) {
+        this.mysql = mysql;
         loadData();
     }
 

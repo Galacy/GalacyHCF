@@ -32,7 +32,7 @@ public class MySQL {
                 exec(SQLStatements.createClaimsTable);
             }
         } catch (ClassNotFoundException | SQLException e) {
-            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Could not connect to the database: " + e);
+            GalacyHCF.instance.getLogger().critical(TextFormat.RED + "[MySQL]: Could not connect to the database: " + e);
         }
     }
 

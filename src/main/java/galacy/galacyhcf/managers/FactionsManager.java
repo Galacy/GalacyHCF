@@ -17,8 +17,8 @@ public class FactionsManager {
 
     public MySQL mysql;
 
-    public FactionsManager(MySQL db) {
-        mysql = db;
+    public FactionsManager(MySQL mysql) {
+        this.mysql = mysql;
     }
 
     public Boolean factionExists(String name) {

@@ -19,11 +19,14 @@ import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
+import galacy.galacyhcf.models.RedisPlayer;
 import galacy.galacyhcf.utils.Utils;
+
+import java.util.Date;
 
 public class EventsListener implements Listener {
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    //@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
         // TODO: Make cool down time between command executions.
     }
@@ -37,8 +40,30 @@ public class EventsListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage("");
         Player player = event.getPlayer();
-        if (player instanceof GPlayer)
+        if (player instanceof GPlayer) {
             ((GPlayer) player).loadData();
+            RedisPlayer data = ((GPlayer) player).redisData();
+            if ((System.currentTimeMillis() / 1000) < data.deathban)
+                player.close(TextFormat.RED + "You're deathbanned for " + Utils.timerMinutes.format(new Date(System.currentTimeMillis() - (data.deathban * 1000L))));
+        }
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        if (player instanceof GPlayer) {
+            RedisPlayer redis = ((GPlayer) player).redisData();
+            if (redis.lives > 0) {
+                redis.updateLives(redis.lives - 1);
+                player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've been saved from death ban using your second life!");
+            } else {
+                redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * 30);
+                player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
+                //InetSocketAddress address = new InetSocketAddress("178.62.193.12", 19232);
+
+                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> player.close(TextFormat.RED + "You're deathbanned for 30 minutes."), 20, true);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

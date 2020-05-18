@@ -159,6 +159,11 @@ public class GPlayer extends Player {
         }, true);
     }
 
+    public RedisPlayer redisData() {
+
+        return GalacyHCF.redis.getPlayer(getLoginChainData().getXUID());
+    }
+
     public enum Chat {
         Public,
         Faction

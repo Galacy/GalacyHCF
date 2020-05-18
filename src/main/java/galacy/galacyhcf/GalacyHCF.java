@@ -3,11 +3,14 @@ package galacy.galacyhcf;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.commands.FactionCommand;
+import galacy.galacyhcf.commands.LivesCommand;
 import galacy.galacyhcf.commands.PingCommand;
+import galacy.galacyhcf.commands.ReviveCommand;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.ClaimsManager;
 import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.providers.MySQL;
+import galacy.galacyhcf.providers.Redis;
 import galacy.galacyhcf.tasks.CombatTask;
 import galacy.galacyhcf.tasks.ScoreboardTask;
 import galacy.galacyhcf.tasks.TeleportTask;
@@ -20,6 +23,7 @@ public class GalacyHCF extends PluginBase {
     public static FactionsManager factionsManager;
     public static ClaimsManager claimsManager;
     public static MySQL mysql;
+    public static Redis redis;
 
     @Override
     public void onEnable() {
@@ -32,15 +36,17 @@ public class GalacyHCF extends PluginBase {
         dotenv = Dotenv.configure().directory(getDataFolder().getPath()).load();
         instance = this;
         mysql = new MySQL(dotenv.get("DB_HOST"), dotenv.get("DB_USERNAME"), dotenv.get("DB_PASSWORD"), dotenv.get("DB_NAME"));
+        redis = new Redis(dotenv.get("REDIS_HOST"));
 
         // Managers
         factionsManager = new FactionsManager(mysql);
         claimsManager = new ClaimsManager(mysql);
 
-
         // Commands
         getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));
         getServer().getCommandMap().register("GalacyHCF", new PingCommand("ping"));
+        getServer().getCommandMap().register("GalacyHCF", new LivesCommand("lives"));
+        getServer().getCommandMap().register("GalacyHCF", new ReviveCommand("revive"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10);
@@ -56,6 +62,7 @@ public class GalacyHCF extends PluginBase {
     @Override
     public void onDisable() {
         mysql.close();
+        redis.close();
     }
 
 }
