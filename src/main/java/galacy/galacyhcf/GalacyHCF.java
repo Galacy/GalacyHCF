@@ -9,6 +9,7 @@ import galacy.galacyhcf.commands.ReviveCommand;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.ClaimsManager;
 import galacy.galacyhcf.managers.FactionsManager;
+import galacy.galacyhcf.managers.WorldBorder;
 import galacy.galacyhcf.providers.MySQL;
 import galacy.galacyhcf.providers.Redis;
 import galacy.galacyhcf.tasks.CombatTask;
@@ -22,6 +23,7 @@ public class GalacyHCF extends PluginBase {
     public static Dotenv dotenv;
     public static FactionsManager factionsManager;
     public static ClaimsManager claimsManager;
+    public static WorldBorder worldBorder;
     public static MySQL mysql;
     public static Redis redis;
 
@@ -41,6 +43,7 @@ public class GalacyHCF extends PluginBase {
         // Managers
         factionsManager = new FactionsManager(mysql);
         claimsManager = new ClaimsManager(mysql);
+        worldBorder = new WorldBorder(-1000, -1000, 1000, 1000);
 
         // Commands
         getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));

@@ -116,6 +116,10 @@ public class EventsListener implements Listener {
                     }
                 }
             }, true);
+            if (GalacyHCF.worldBorder.outside(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
+                player.sendMessage(Utils.prefix + TextFormat.RED + "You've reached the world border!");
+                player.knockBack(null, 0, 5, 5, 2);
+            }
         }
     }
 
