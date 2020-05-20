@@ -2,19 +2,15 @@ package galacy.galacyhcf;
 
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
-import galacy.galacyhcf.commands.FactionCommand;
-import galacy.galacyhcf.commands.LivesCommand;
-import galacy.galacyhcf.commands.PingCommand;
-import galacy.galacyhcf.commands.ReviveCommand;
+import galacy.galacyhcf.commands.*;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.ClaimsManager;
 import galacy.galacyhcf.managers.FactionsManager;
+import galacy.galacyhcf.managers.SpawnBorder;
 import galacy.galacyhcf.managers.WorldBorder;
 import galacy.galacyhcf.providers.MySQL;
 import galacy.galacyhcf.providers.Redis;
-import galacy.galacyhcf.tasks.CombatTask;
-import galacy.galacyhcf.tasks.ScoreboardTask;
-import galacy.galacyhcf.tasks.TeleportTask;
+import galacy.galacyhcf.tasks.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class GalacyHCF extends PluginBase {
@@ -24,8 +20,10 @@ public class GalacyHCF extends PluginBase {
     public static FactionsManager factionsManager;
     public static ClaimsManager claimsManager;
     public static WorldBorder worldBorder;
+    public static SpawnBorder spawnBorder;
     public static MySQL mysql;
     public static Redis redis;
+    public static SotwTask sotwTask;
 
     @Override
     public void onEnable() {
@@ -50,11 +48,14 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new PingCommand("ping"));
         getServer().getCommandMap().register("GalacyHCF", new LivesCommand("lives"));
         getServer().getCommandMap().register("GalacyHCF", new ReviveCommand("revive"));
+        getServer().getCommandMap().register("GalacyHCF", new PvPCommand("pvp"));
+        getServer().getCommandMap().register("GalacyHCF", new SotwCommand("sotw"));
 
         // Tasks
-        getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10);
+        getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);
         getServer().getScheduler().scheduleRepeatingTask(new TeleportTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new CombatTask(this), 20);
+        getServer().getScheduler().scheduleRepeatingTask(new PvPTask(this), 20);
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);

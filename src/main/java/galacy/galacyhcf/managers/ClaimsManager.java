@@ -26,8 +26,9 @@ public class ClaimsManager {
         claims.clear();
         try {
             ResultSet results = mysql.query(SQLStatements.allClaims);
+            Claim spawn = null;
             while (results.next()) {
-                claims.add(new Claim(
+                Claim claim = new Claim(
                         results.getInt("id"),
                         results.getDate("created_at"),
                         results.getDate("updated_at"),
@@ -37,7 +38,32 @@ public class ClaimsManager {
                         results.getInt("x1"),
                         results.getInt("x2"),
                         results.getInt("z1"),
-                        results.getInt("z2")));
+                        results.getInt("z2"));
+                claims.add(claim);
+                if (claim.type == Claim.spawnClaim) spawn = claim;
+            }
+            if (spawn == null) {
+                GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "Spawn not found, creating a new one 100x100.");
+                String currentTime = Utils.dateFormat.format(new Date());
+                try {
+                    mysql.exec(SQLStatements.createFactionClaim.
+                            replace("$created_at", currentTime).
+                            replace("$updated_at", currentTime).
+                            replace("$type", String.valueOf(Claim.spawnClaim)).
+                            replace("$faction_id", "0").
+                            replace("$faction_name", "Spawn").
+                            replace("$x1", "-50").
+                            replace("$x2", "50").
+                            replace("$z1", "-50").
+                            replace("$z2", "50")
+                    );
+                } catch (SQLException e) {
+                    GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues creating new claim: " + e);
+                }
+                loadData();
+            } else {
+                GalacyHCF.spawnBorder = new SpawnBorder(spawn.x1, spawn.z1, spawn.x2, spawn.z2);
+                GalacyHCF.instance.getLogger().info(TextFormat.AQUA + "Spawn successfulyl loaded.");
             }
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues loading all claims: " + e);

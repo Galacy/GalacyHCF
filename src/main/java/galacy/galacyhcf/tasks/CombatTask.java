@@ -17,6 +17,9 @@ public class CombatTask extends PluginTask<GalacyHCF> {
             if (player instanceof GPlayer) {
                 if (((GPlayer) player).fightTime != 0) {
                     ((GPlayer) player).fightTime--;
+                    if (((GPlayer) player).fightTime == 0) {
+                        if (((GPlayer) player).borderFace != null) ((GPlayer) player).borderFace.remove(player);
+                    }
                 }
             }
         }

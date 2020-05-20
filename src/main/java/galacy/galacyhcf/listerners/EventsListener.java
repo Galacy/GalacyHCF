@@ -11,10 +11,16 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
+import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.*;
+import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.item.ItemID;
+import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.PlayerActionPacket;
+import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.Faction;
@@ -25,26 +31,26 @@ import galacy.galacyhcf.utils.Utils;
 import java.util.Date;
 
 public class EventsListener implements Listener {
-
-    //@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onCommand(PlayerCommandPreprocessEvent event) {
-        // TODO: Make cool down time between command executions.
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCreation(PlayerCreationEvent event) {
         event.setPlayerClass(GPlayer.class);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage("");
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onLogin(PlayerLoginEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
             ((GPlayer) player).loadData();
             RedisPlayer data = ((GPlayer) player).redisData();
             if ((System.currentTimeMillis() / 1000) < data.deathban)
-                player.close(TextFormat.RED + "You're deathbanned for " + Utils.timerMinutes.format(new Date(System.currentTimeMillis() - (data.deathban * 1000L))));
+                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () ->
+                                player.kick(TextFormat.RED + "You're deathbanned for " + Utils.timerMinutes.format(new Date((data.deathban * 1000L) - System.currentTimeMillis())), false),
+                        10, true);
         }
     }
 
@@ -61,7 +67,7 @@ public class EventsListener implements Listener {
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
                 //InetSocketAddress address = new InetSocketAddress("178.62.193.12", 19232);
 
-                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> player.close(TextFormat.RED + "You're deathbanned for 30 minutes."), 20, true);
+                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false), 20, true);
             }
         }
     }
@@ -74,12 +80,8 @@ public class EventsListener implements Listener {
             if (((GPlayer) player).fightTime != 0) {
                 player.kill();
             }
+            ((GPlayer) player).redisData().update(GalacyHCF.redis);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void movedWrong(PlayerInvalidMoveEvent event) {
-        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -94,54 +96,103 @@ public class EventsListener implements Listener {
                     ((GPlayer) player).moved = true;
                 }
             }
+            if (((GPlayer) player).fightTime != 0 || ((GPlayer) player).pvptimer) {
+                if (GalacyHCF.spawnBorder.insideSpawn(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
+
+                    player.sendMessage(Utils.prefix + TextFormat.RED + (((GPlayer) player).pvptimer ? "You can't go into claims while your pvp is disabled! You can enable it with: /pvp." : "You can't go to spawn while you're in combat!"));
+                    event.setCancelled(true);
+                    return;
+                } else {
+                    BorderFace face = GalacyHCF.spawnBorder.borderFace(event.getTo().getFloorX(), event.getTo().getFloorZ());
+                    if (face == null) return;
+                    // NOTICE: This has to be optimized.
+                    if (face.start.distance(new Vector3(player.x, player.y, player.z)) <= 5 || face.end.distance(new Vector3(player.x, player.y, player.z)) <= 5) {
+                        if (((GPlayer) player).borderFace == null) {
+                            face.build(player);
+                            ((GPlayer) player).borderFace = face;
+                        } else if (!((GPlayer) player).borderFace.equals(face)) {
+                            ((GPlayer) player).borderFace.remove(player);
+                            face.build(player);
+                            ((GPlayer) player).borderFace = face;
+                        }
+                    } else if (((GPlayer) player).borderFace != null) {
+                        ((GPlayer) player).borderFace.remove(player);
+                        ((GPlayer) player).borderFace = null;
+                    }
+                }
+            }
+            if (GalacyHCF.worldBorder.outside(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
+                player.sendMessage(Utils.prefix + TextFormat.RED + "You've reached the world border!");
+                event.setCancelled(true);
+                return;
+            }
             GalacyHCF.instance.getServer().getScheduler().scheduleTask(GalacyHCF.instance, () -> {
                 if (event.getFrom().getFloorX() != event.getTo().getFloorX() || event.getFrom().getFloorZ() != event.getTo().getFloorZ()) {
                     Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
                     if (claim == null) {
                         if (((GPlayer) player).claim != null) {
+                            if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
+                                ((GPlayer) player).pvptimer = true;
                             player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
                             player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
                             ((GPlayer) player).claim = null;
                         }
                     } else {
-                        if (((GPlayer) player).claim == null) {
-                            player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
-                            player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                            ((GPlayer) player).claim = claim;
-                        } else if (((GPlayer) player).claim.id != claim.id) {
-                            player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                            player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                            ((GPlayer) player).claim = claim;
+                        if (((GPlayer) player).pvptimer) {
+                            player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while you still have your pvp timer! You can disable it with: /pvp on.");
+                            event.setCancelled(true);
+                        } else {
+                            if (((GPlayer) player).claim == null) {
+                                player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
+                                player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                                ((GPlayer) player).claim = claim;
+                            } else if (((GPlayer) player).claim.id != claim.id) {
+                                if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
+                                    ((GPlayer) player).pvptimer = true;
+                                player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                                player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                                ((GPlayer) player).claim = claim;
+                            }
                         }
                     }
                 }
             }, true);
-            if (GalacyHCF.worldBorder.outside(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
-                player.sendMessage(Utils.prefix + TextFormat.RED + "You've reached the world border!");
-                player.knockBack(null, 0, 5, 5, 2);
-            }
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onDamage(EntityDamageByEntityEvent event) {
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onDamage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player && GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started)
+            event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onDamageByEntity(EntityDamageByEntityEvent event) {
         Entity player = event.getEntity();
         if (player instanceof GPlayer) {
-            Entity damager = event.getDamager();
-            if (damager instanceof GPlayer) {
-                if (((GPlayer) player).factionId == 0 || ((GPlayer) damager).factionId == 0) {
-                    checkTeleport((GPlayer) player);
-                    checkTeleport((GPlayer) damager);
-                } else if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
-                    event.setCancelled(true);
-                    ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
+            if (GalacyHCF.spawnBorder.insideSpawn(player.getFloorX(), player.getFloorZ())) event.setCancelled(true);
+            else {
+                Entity damager = event.getDamager();
+                if (damager instanceof GPlayer) {
+                    if (((GPlayer) player).pvptimer) {
+                        ((GPlayer) damager).sendMessage(Utils.prefix + TextFormat.RED + "You can not hurt " + player.getName() + " because his PvP is not enabled yet!");
+                        event.setCancelled(true);
+                    } else {
+                        if (((GPlayer) player).factionId == 0 || ((GPlayer) damager).factionId == 0) {
+                            checkTeleport((GPlayer) player);
+                            checkTeleport((GPlayer) damager);
+                        } else if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
+                            event.setCancelled(true);
+                            ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
+                        } else {
+                            checkTeleport((GPlayer) player);
+
+                            checkTeleport((GPlayer) damager);
+                        }
+                    }
                 } else {
                     checkTeleport((GPlayer) player);
-
-                    checkTeleport((GPlayer) damager);
                 }
-            } else {
-                checkTeleport((GPlayer) player);
             }
         }
 
@@ -153,7 +204,19 @@ public class EventsListener implements Listener {
             player.homeTeleport = false;
             player.stuckTeleport = false;
             player.moved = true;
-            player.fightTime = 30;
+        }
+        checkFight(player);
+    }
+
+    public void checkFight(GPlayer player) {
+        player.fightTime = 30;
+        BorderFace face = GalacyHCF.spawnBorder.borderFace(player.getFloorX(), player.getFloorZ());
+        if (face == null) return;
+
+        // NOTICE: This has to be optimized.
+        if (face.start.distance(new Vector3(player.x, player.y, player.z)) <= 5 || face.end.distance(new Vector3(player.x, player.y, player.z)) <= 5) {
+            face.build(player);
+            player.borderFace = face;
         }
     }
 
@@ -197,6 +260,7 @@ public class EventsListener implements Listener {
             }
         }
     }
+
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onClick(PlayerInteractEvent event) {
@@ -341,5 +405,27 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketFill(PlayerBucketFillEvent event) {
         editTerrainCheck(event, event.getBlockClicked(), event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPacket(DataPacketReceiveEvent event) {
+        Player player = event.getPlayer();
+        if (player instanceof GPlayer) {
+            if (((GPlayer) player).fightTime != 0) {
+                if (event.getPacket() instanceof PlayerActionPacket) {
+                    Block block = event.getPlayer().getLevel().getBlock(((PlayerActionPacket) event.getPacket()).x, ((PlayerActionPacket) event.getPacket()).y, ((PlayerActionPacket) event.getPacket()).z);
+                    if (GalacyHCF.spawnBorder.insideSpawn(block.getFloorX(), block.getFloorZ())) {
+                        if (block.getId() == 0) {
+                            UpdateBlockPacket packet = new UpdateBlockPacket();
+                            packet.x = block.getFloorX();
+                            packet.y = block.getFloorY();
+                            packet.z = block.getFloorZ();
+                            packet.blockRuntimeId = 31;
+                            event.getPlayer().dataPacket(packet);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

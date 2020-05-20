@@ -6,6 +6,9 @@ import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.scoreboardapi.ScoreboardAPI;
+import galacy.galacyhcf.utils.Utils;
+
+import java.util.Date;
 
 public class ScoreboardTask extends PluginTask<GalacyHCF> {
 
@@ -15,8 +18,12 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
 
     @Override
     public void onRun(int i) {
+        String sotwTime = "";
+        if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started)
+            sotwTime = GalacyHCF.sotwTask.time > 60 * 60 ? Utils.timerHour.format(new Date(GalacyHCF.sotwTask.time * 1000L)) : Utils.timerMinutes.format(new Date(GalacyHCF.sotwTask.time * 1000L));
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
+                player.sendPopup(player.getFloorX() + ":" + player.getFloorY() + ":" + player.getFloorZ());
                 if (((GPlayer) player).sb == null)
                     ((GPlayer) player).sb = new ScoreboardAPI.Companion.Builder().build();
                 else ((GPlayer) player).sb.removePlayer(player);
@@ -34,6 +41,14 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
                 }
                 if (((GPlayer) player).fightTime != 0) {
                     ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.RED) + "CombatTag: " + TextFormat.RESET + TextFormat.GRAY + ((GPlayer) player).fightTime, i);
+                    i++;
+                }
+                if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started) {
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.DARK_BLUE) + "SoTW: " + TextFormat.RESET + TextFormat.GRAY + sotwTime, i);
+                    i++;
+                }
+                if (((GPlayer) player).redisData().pvptime > 0) {
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.RED) + "PvP: " + TextFormat.RESET + TextFormat.GRAY + Utils.timerMinutes.format(new Date(((GPlayer) player).redisData().pvptime * 1000L)), i);
                 }
 
                 ((GPlayer) player).sb.addPlayer(player);

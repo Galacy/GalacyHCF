@@ -6,6 +6,7 @@ import cn.nukkit.network.SourceInterface;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.providers.SQLStatements;
 import galacy.galacyhcf.scoreboardapi.scoreboard.SimpleScoreboard;
@@ -40,6 +41,9 @@ public class GPlayer extends Player {
     public Chat chatType = Chat.Public;
     public ClaimProcess claimProcess;
     public Claim claim;
+    public RedisPlayer redis;
+    public BorderFace borderFace;
+    public boolean pvptimer = false;
 
     public void loadData() {
         try {
@@ -90,6 +94,8 @@ public class GPlayer extends Player {
         } catch (SQLException e) {
             getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues finding faction by name: " + e);
         }
+
+        pvptimer = redisData().pvptime > 0 && redisData().pvptime < 60 * 15;
     }
 
 
@@ -160,8 +166,10 @@ public class GPlayer extends Player {
     }
 
     public RedisPlayer redisData() {
+        if (redis == null)
+            redis = GalacyHCF.redis.getPlayer(getLoginChainData().getXUID());
 
-        return GalacyHCF.redis.getPlayer(getLoginChainData().getXUID());
+        return redis;
     }
 
     public enum Chat {
