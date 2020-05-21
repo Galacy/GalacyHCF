@@ -59,6 +59,7 @@ public class EventsListener implements Listener {
         Player player = event.getEntity();
         if (player instanceof GPlayer) {
             RedisPlayer redis = ((GPlayer) player).redisData();
+            redis.addDeath();
             if (redis.lives > 0) {
                 redis.updateLives(redis.lives - 1);
                 player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've been saved from death ban using your second life!");
@@ -69,6 +70,15 @@ public class EventsListener implements Listener {
 
                 player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false), 20, true);
             }
+            EntityDamageEvent cause = player.getLastDamageCause();
+            if (cause instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) cause).getDamager() instanceof GPlayer) {
+                GPlayer damager = (GPlayer) ((EntityDamageByEntityEvent) cause).getDamager();
+                damager.redisData().addKill();
+                String killer = TextFormat.RED + damager.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + damager.redisData().kills + TextFormat.DARK_RED + "]";
+                String victim = TextFormat.RED + player.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + ((GPlayer) player).redisData().kills + TextFormat.DARK_RED + "]";
+
+                event.setDeathMessage(victim + TextFormat.YELLOW + " was killed by " + killer);
+            } else event.setDeathMessage(TextFormat.RED + event.getDeathMessage().getText());
         }
     }
 
@@ -389,7 +399,34 @@ public class EventsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent event) {
+        Player player = event.getPlayer();
         editTerrainCheck(event, event.getBlock(), event.getPlayer());
+
+        if (player instanceof GPlayer) {
+            RedisPlayer data = ((GPlayer) player).redisData();
+            switch (event.getBlock().getId()) {
+                case BlockID.DIAMOND_ORE:
+                    data.diamonds++;
+                    data.update(GalacyHCF.redis);
+                    break;
+                case BlockID.GOLD_ORE:
+                    data.gold++;
+                    data.update(GalacyHCF.redis);
+                    break;
+                case BlockID.IRON_ORE:
+                    data.iron++;
+                    data.update(GalacyHCF.redis);
+                    break;
+                case BlockID.REDSTONE_ORE:
+                    data.redstone++;
+                    data.update(GalacyHCF.redis);
+                    break;
+                case BlockID.LAPIS_ORE:
+                    data.lapis++;
+                    data.update(GalacyHCF.redis);
+                    break;
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

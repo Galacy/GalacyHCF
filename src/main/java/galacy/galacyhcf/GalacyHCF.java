@@ -50,6 +50,10 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new ReviveCommand("revive"));
         getServer().getCommandMap().register("GalacyHCF", new PvPCommand("pvp"));
         getServer().getCommandMap().register("GalacyHCF", new SotwCommand("sotw"));
+        getServer().getCommandMap().register("GalacyHCF", new StatsCommand("stats"));
+        getServer().getCommandMap().register("GalacyHCF", new OresCommand("ores"));
+        getServer().getCommandMap().register("GalacyHCF", new BalanceCommand("balance"));
+        getServer().getCommandMap().register("GalacyHCF", new PayCommand("pay"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);

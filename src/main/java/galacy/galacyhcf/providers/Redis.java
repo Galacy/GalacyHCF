@@ -40,9 +40,10 @@ public class Redis {
         if (jedis.exists(xuid)) {
             JSONObject json = JSON.parseObject(jedis.get(xuid));
 
-            return new RedisPlayer(xuid, json.getIntValue("pvptime"), json.getIntValue("deathban"), json.getIntValue("lives"));
+            return new RedisPlayer(xuid, json.getIntValue("pvptime"), json.getIntValue("deathban"), json.getIntValue("lives"), json.getIntValue("kills"), json.getIntValue("deaths"),
+                    json.getIntValue("diamonds"), json.getIntValue("gold"), json.getIntValue("iron"), json.getIntValue("redstone"), json.getIntValue("lapis"));
         } else {
-            RedisPlayer player = new RedisPlayer(xuid, 15 * 60, 0, 0);
+            RedisPlayer player = new RedisPlayer(xuid, 15 * 60, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             setPlayer(xuid, player);
 
             return player;
