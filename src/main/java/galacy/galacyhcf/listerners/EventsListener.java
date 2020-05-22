@@ -10,6 +10,7 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
+import cn.nukkit.event.entity.EntityArmorChangeEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.*;
@@ -18,10 +19,12 @@ import cn.nukkit.item.ItemID;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.PlayerActionPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
+import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
+import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.models.GPlayer;
@@ -32,17 +35,18 @@ import java.util.Date;
 
 public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onCreation(PlayerCreationEvent event) {
+    public void on(PlayerCreationEvent event) {
         event.setPlayerClass(GPlayer.class);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onJoin(PlayerJoinEvent event) {
+    public void on(PlayerJoinEvent event) {
         event.setJoinMessage("");
+        if (event.getPlayer() instanceof GPlayer) ((GPlayer) event.getPlayer()).applySet();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onLogin(PlayerLoginEvent event) {
+    public void on(PlayerLoginEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
             ((GPlayer) player).loadData();
@@ -55,7 +59,7 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler
-    public void onDeath(PlayerDeathEvent event) {
+    public void on(PlayerDeathEvent event) {
         Player player = event.getEntity();
         if (player instanceof GPlayer) {
             RedisPlayer redis = ((GPlayer) player).redisData();
@@ -83,7 +87,7 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onQuit(PlayerQuitEvent event) {
+    public void on(PlayerQuitEvent event) {
         event.setQuitMessage("");
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
@@ -95,12 +99,22 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onMove(PlayerMoveEvent event) {
+    public void on(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer && (event.getFrom().getFloorX() != event.getTo().getFloorX() || event.getFrom().getFloorZ() != event.getTo().getFloorZ())) {
             if (((GPlayer) player).freeze > (System.currentTimeMillis() / 1000L)) {
                 event.setCancelled(true);
                 return;
+            }
+            if (((GPlayer) player).set == SetsManager.Sets.Miner) {
+                if (event.getTo().getFloorY() != event.getFrom().getFloorY()) {
+                    if (event.getTo().getFloorY() < 30) {
+                        if (!player.hasEffect(Effect.INVISIBILITY))
+                            player.addEffect(Effect.getEffect(Effect.INVISIBILITY).setDuration(999999999));
+                    } else {
+                        if (player.hasEffect(Effect.INVISIBILITY)) player.removeEffect(Effect.INVISIBILITY);
+                    }
+                }
             }
             if (((GPlayer) player).homeTeleport || ((GPlayer) player).stuckTeleport) {
                 if (!((GPlayer) player).moved) {
@@ -173,13 +187,13 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void onDamage(EntityDamageEvent event) {
+    public void on(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player && GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started)
             event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onDamageByEntity(EntityDamageByEntityEvent event) {
+    public void on(EntityDamageByEntityEvent event) {
         Entity player = event.getEntity();
         if (player instanceof GPlayer) {
             if (GalacyHCF.spawnBorder.insideSpawn(player.getFloorX(), player.getFloorZ())) event.setCancelled(true);
@@ -275,7 +289,7 @@ public class EventsListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void onClick(PlayerInteractEvent event) {
+    public void on(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
             switch (event.getBlock().getId()) {
@@ -401,7 +415,7 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBreak(BlockBreakEvent event) {
+    public void on(BlockBreakEvent event) {
         Player player = event.getPlayer();
         editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
 
@@ -433,22 +447,22 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlace(BlockPlaceEvent event) {
+    public void on(BlockPlaceEvent event) {
         editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+    public void on(PlayerBucketEmptyEvent event) {
         editTerrainCheck(event, event.getBlockClicked(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBucketFill(PlayerBucketFillEvent event) {
+    public void on(PlayerBucketFillEvent event) {
         editTerrainCheck(event, event.getBlockClicked(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPacket(DataPacketReceiveEvent event) {
+    public void on(DataPacketReceiveEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
             if (((GPlayer) player).fightTime != 0) {
@@ -467,5 +481,10 @@ public class EventsListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void on(EntityArmorChangeEvent event) {
+        if (event.getEntity() instanceof GPlayer) ((GPlayer) event.getEntity()).applySet();
     }
 }

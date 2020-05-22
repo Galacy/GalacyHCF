@@ -1,13 +1,16 @@
 package galacy.galacyhcf.models;
 
 import cn.nukkit.Player;
+import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Position;
 import cn.nukkit.network.SourceInterface;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
+import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
+import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.providers.SQLStatements;
 import galacy.galacyhcf.scoreboardapi.scoreboard.SimpleScoreboard;
 import galacy.galacyhcf.utils.Utils;
@@ -46,6 +49,7 @@ public class GPlayer extends Player {
     public boolean pvptimer = false;
     public long freeze = System.currentTimeMillis() / 1000L;
     public boolean coords = false;
+    public SetsManager.Sets set = SetsManager.Sets.Nothing;
 
     public void loadData() {
         try {
@@ -172,6 +176,60 @@ public class GPlayer extends Player {
             redis = GalacyHCF.redis.getPlayer(getLoginChainData().getXUID());
 
         return redis;
+    }
+
+    public void applySet() {
+        if (getInventory().getHelmet().getId() == ItemID.IRON_HELMET && getInventory().getChestplate().getId() == ItemID.IRON_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.IRON_LEGGINGS && getInventory().getBoots().getId() == ItemID.IRON_BOOTS) {
+            if (set != SetsManager.Sets.Miner) {
+                set = SetsManager.Sets.Miner;
+                for (Effect effect : SetsManager.minerEffects) {
+                    addEffect(effect);
+                }
+            }
+        } else if (getInventory().getHelmet().getId() == ItemID.GOLD_HELMET && getInventory().getChestplate().getId() == ItemID.GOLD_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.GOLD_LEGGINGS && getInventory().getBoots().getId() == ItemID.GOLD_BOOTS) {
+            if (set != SetsManager.Sets.Bard) {
+                set = SetsManager.Sets.Miner;
+                for (Effect effect : SetsManager.minerEffects) {
+                    addEffect(effect);
+                }
+            }
+        } else if (getInventory().getHelmet().getId() == ItemID.LEATHER_CAP && getInventory().getChestplate().getId() == ItemID.LEATHER_TUNIC && getInventory().getLeggings().getId() == ItemID.LEATHER_PANTS && getInventory().getBoots().getId() == ItemID.LEATHER_BOOTS) {
+            if (set != SetsManager.Sets.Archer) {
+                set = SetsManager.Sets.Archer;
+                for (Effect effect : SetsManager.archerEffects) {
+                    addEffect(effect);
+                }
+            }
+        } else if (getInventory().getHelmet().getId() == ItemID.CHAIN_HELMET && getInventory().getChestplate().getId() == ItemID.CHAIN_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.CHAIN_LEGGINGS && getInventory().getBoots().getId() == ItemID.CHAIN_BOOTS) {
+            if (set != SetsManager.Sets.Rogue) {
+                set = SetsManager.Sets.Rogue;
+                for (Effect effect : SetsManager.rogueEffects) {
+                    addEffect(effect);
+                }
+            }
+        } else {
+            if (set != SetsManager.Sets.Nothing) {
+                switch (set) {
+                    case Bard:
+                        sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Bard set.");
+                        break;
+
+                    case Miner:
+                        sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Miner set.");
+                        break;
+
+                    case Archer:
+                        sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Archer set.");
+                        break;
+
+                    case Rogue:
+                        sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Rogue set.");
+                        break;
+                }
+                set = SetsManager.Sets.Nothing;
+                removeAllEffects();
+            }
+        }
     }
 
     public enum Chat {
