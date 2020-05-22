@@ -49,6 +49,10 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
                 }
                 if (((GPlayer) player).redisData().pvptime > 0) {
                     ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.RED) + "PvP: " + TextFormat.RESET + TextFormat.GRAY + Utils.timerMinutes.format(new Date(((GPlayer) player).redisData().pvptime * 1000L)), i);
+                    i++;
+                }
+                if (((GPlayer) player).coords) {
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.GREEN) + "Coords: " + TextFormat.RESET + TextFormat.GRAY + player.getFloorX() + "," + player.getFloorZ(), i);
                 }
 
                 ((GPlayer) player).sb.addPlayer(player);

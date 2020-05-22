@@ -44,6 +44,8 @@ public class GPlayer extends Player {
     public RedisPlayer redis;
     public BorderFace borderFace;
     public boolean pvptimer = false;
+    public long freeze = System.currentTimeMillis() / 1000L;
+    public boolean coords = false;
 
     public void loadData() {
         try {

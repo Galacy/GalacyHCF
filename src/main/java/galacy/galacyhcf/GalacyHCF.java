@@ -54,6 +54,7 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new OresCommand("ores"));
         getServer().getCommandMap().register("GalacyHCF", new BalanceCommand("balance"));
         getServer().getCommandMap().register("GalacyHCF", new PayCommand("pay"));
+        getServer().getCommandMap().register("GalacyHCF", new CoordsCommand("coords"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);

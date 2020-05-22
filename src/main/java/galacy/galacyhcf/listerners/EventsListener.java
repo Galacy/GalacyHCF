@@ -97,7 +97,11 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (player instanceof GPlayer) {
+        if (player instanceof GPlayer && (event.getFrom().getFloorX() != event.getTo().getFloorX() || event.getFrom().getFloorZ() != event.getTo().getFloorZ())) {
+            if (((GPlayer) player).freeze > (System.currentTimeMillis() / 1000L)) {
+                event.setCancelled(true);
+                return;
+            }
             if (((GPlayer) player).homeTeleport || ((GPlayer) player).stuckTeleport) {
                 if (!((GPlayer) player).moved) {
                     player.sendMessage(Utils.prefix + TextFormat.RED + "Teleportation failed because you moved.");
@@ -137,32 +141,30 @@ public class EventsListener implements Listener {
                 return;
             }
             GalacyHCF.instance.getServer().getScheduler().scheduleTask(GalacyHCF.instance, () -> {
-                if (event.getFrom().getFloorX() != event.getTo().getFloorX() || event.getFrom().getFloorZ() != event.getTo().getFloorZ()) {
-                    Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
-                    if (claim == null) {
-                        if (((GPlayer) player).claim != null) {
+                Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
+                if (claim == null) {
+                    if (((GPlayer) player).claim != null) {
+                        if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
+                            ((GPlayer) player).pvptimer = true;
+                        player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                        player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
+                        ((GPlayer) player).claim = null;
+                    }
+                } else {
+                    if (((GPlayer) player).pvptimer) {
+                        player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while you still have your pvp timer! You can disable it with: /pvp on.");
+                        event.setCancelled(true);
+                    } else {
+                        if (((GPlayer) player).claim == null) {
+                            player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
+                            player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                            ((GPlayer) player).claim = claim;
+                        } else if (((GPlayer) player).claim.id != claim.id) {
                             if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
                                 ((GPlayer) player).pvptimer = true;
                             player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                            player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
-                            ((GPlayer) player).claim = null;
-                        }
-                    } else {
-                        if (((GPlayer) player).pvptimer) {
-                            player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while you still have your pvp timer! You can disable it with: /pvp on.");
-                            event.setCancelled(true);
-                        } else {
-                            if (((GPlayer) player).claim == null) {
-                                player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
-                                player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                                ((GPlayer) player).claim = claim;
-                            } else if (((GPlayer) player).claim.id != claim.id) {
-                                if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
-                                    ((GPlayer) player).pvptimer = true;
-                                player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                                player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
-                                ((GPlayer) player).claim = claim;
-                            }
+                            player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + claim.factionName + TextFormat.YELLOW + " (" + (claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
+                            ((GPlayer) player).claim = claim;
                         }
                     }
                 }
@@ -308,7 +310,7 @@ public class EventsListener implements Listener {
                 case BlockID.JUNGLE_DOOR_BLOCK:
                 case BlockID.SPRUCE_DOOR_BLOCK:
                 case BlockID.WOOD_DOOR_BLOCK:
-                    editTerrainCheck(event, event.getBlock(), player);
+                    editTerrainCheck(event, event.getBlock(), player, true);
                     break;
             }
             if (event.getItem() != null) {
@@ -324,7 +326,7 @@ public class EventsListener implements Listener {
                     case ItemID.IRON_SHOVEL:
                     case ItemID.STONE_SHOVEL:
                     case ItemID.WOODEN_SHOVEL:
-                        editTerrainCheck(event, event.getBlock(), player);
+                        editTerrainCheck(event, event.getBlock(), player, false);
                         break;
                 }
             }
@@ -377,7 +379,7 @@ public class EventsListener implements Listener {
         }
     }
 
-    public void editTerrainCheck(Event event, Block block, Player player) {
+    public void editTerrainCheck(Event event, Block block, Player player, boolean blockMovement) {
         if (player.isOp() && player.isCreative()) return;
         if (player instanceof GPlayer) {
             Claim claim = GalacyHCF.claimsManager.findClaim(block.getFloorX(), block.getFloorZ());
@@ -387,6 +389,7 @@ public class EventsListener implements Listener {
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You can't edit terrain on " + claim.factionName + "'s claim.");
                     }
                     event.setCancelled(true);
+                    ((GPlayer) player).freeze = System.currentTimeMillis() / 1000L + 1;
                 }
             } else {
                 if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {
@@ -400,7 +403,7 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        editTerrainCheck(event, event.getBlock(), event.getPlayer());
+        editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
 
         if (player instanceof GPlayer) {
             RedisPlayer data = ((GPlayer) player).redisData();
@@ -431,17 +434,17 @@ public class EventsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlace(BlockPlaceEvent event) {
-        editTerrainCheck(event, event.getBlock(), event.getPlayer());
+        editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        editTerrainCheck(event, event.getBlockClicked(), event.getPlayer());
+        editTerrainCheck(event, event.getBlockClicked(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBucketFill(PlayerBucketFillEvent event) {
-        editTerrainCheck(event, event.getBlockClicked(), event.getPlayer());
+        editTerrainCheck(event, event.getBlockClicked(), event.getPlayer(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
