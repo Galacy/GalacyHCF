@@ -50,6 +50,8 @@ public class GPlayer extends Player {
     public long freeze = System.currentTimeMillis() / 1000L;
     public boolean coords = false;
     public SetsManager.Sets set = SetsManager.Sets.Nothing;
+    public int bardEnergy = 100;
+    public int bardCooldown = 0;
 
     public void loadData() {
         try {
@@ -188,10 +190,11 @@ public class GPlayer extends Player {
             }
         } else if (getInventory().getHelmet().getId() == ItemID.GOLD_HELMET && getInventory().getChestplate().getId() == ItemID.GOLD_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.GOLD_LEGGINGS && getInventory().getBoots().getId() == ItemID.GOLD_BOOTS) {
             if (set != SetsManager.Sets.Bard) {
-                set = SetsManager.Sets.Miner;
-                for (Effect effect : SetsManager.minerEffects) {
-                    addEffect(effect);
-                }
+                set = SetsManager.Sets.Bard;
+            }
+            removeAllEffects();
+            for (Effect effect : SetsManager.minerEffects) {
+                addEffect(effect);
             }
         } else if (getInventory().getHelmet().getId() == ItemID.LEATHER_CAP && getInventory().getChestplate().getId() == ItemID.LEATHER_TUNIC && getInventory().getLeggings().getId() == ItemID.LEATHER_PANTS && getInventory().getBoots().getId() == ItemID.LEATHER_BOOTS) {
             if (set != SetsManager.Sets.Archer) {
@@ -229,6 +232,85 @@ public class GPlayer extends Player {
                 set = SetsManager.Sets.Nothing;
                 removeAllEffects();
             }
+        }
+    }
+
+    public void applyBardItem(int id) {
+        switch (id) {
+            case ItemID.SUGAR:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
+                if (bardEnergy < 20) {
+                    sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
+                } else {
+                    bardCooldown = 15;
+                    bardEnergy -= 20;
+                    addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120));
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 120);
+                }
+                break;
+
+            case ItemID.FEATHER:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
+                if (bardEnergy < 20) {
+                    sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
+                } else {
+                    bardCooldown = 15;
+                    bardEnergy -= 20;
+                    addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160));
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                }
+                break;
+
+            case ItemID.IRON_INGOT:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
+                if (bardEnergy < 20) {
+                    sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
+                } else {
+                    bardCooldown = 15;
+                    bardEnergy -= 20;
+                    addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160));
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                }
+                break;
+
+            case ItemID.GHAST_TEAR:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
+                if (bardEnergy < 30) {
+                    sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
+                } else {
+                    bardCooldown = 15;
+                    bardEnergy -= 30;
+                    addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100));
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                }
+                break;
+
+            case ItemID.BLAZE_POWDER:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
+                if (bardEnergy <= 40) {
+                    sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
+                } else {
+                    bardCooldown = 15;
+                    bardEnergy -= 40;
+                    addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80));
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                }
+                break;
         }
     }
 

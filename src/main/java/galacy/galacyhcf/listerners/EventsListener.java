@@ -343,6 +343,7 @@ public class EventsListener implements Listener {
                         editTerrainCheck(event, event.getBlock(), player, false);
                         break;
                 }
+                if (!event.isCancelled()) ((GPlayer) player).applyBardItem(event.getItem().getId());
             }
 
             if (((GPlayer) player).claimProcess != null) {

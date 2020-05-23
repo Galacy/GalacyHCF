@@ -61,6 +61,7 @@ public class GalacyHCF extends PluginBase {
         getServer().getScheduler().scheduleRepeatingTask(new TeleportTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new CombatTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new PvPTask(this), 20);
+        getServer().getScheduler().scheduleRepeatingTask(new BardTask(this), 20);
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
