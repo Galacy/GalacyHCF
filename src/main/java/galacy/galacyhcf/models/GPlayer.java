@@ -52,6 +52,7 @@ public class GPlayer extends Player {
     public SetsManager.Sets set = SetsManager.Sets.Nothing;
     public int bardEnergy = 100;
     public int bardCooldown = 0;
+    public Shop shop;
 
     public void loadData() {
         try {

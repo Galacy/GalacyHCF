@@ -3,6 +3,8 @@ package galacy.galacyhcf.listerners;
 import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.block.BlockID;
+import cn.nukkit.blockentity.BlockEntity;
+import cn.nukkit.blockentity.BlockEntitySign;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.Event;
 import cn.nukkit.event.EventHandler;
@@ -15,6 +17,7 @@ import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.PlayerActionPacket;
@@ -25,10 +28,7 @@ import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.managers.SetsManager;
-import galacy.galacyhcf.models.Claim;
-import galacy.galacyhcf.models.Faction;
-import galacy.galacyhcf.models.GPlayer;
-import galacy.galacyhcf.models.RedisPlayer;
+import galacy.galacyhcf.models.*;
 import galacy.galacyhcf.utils.Utils;
 
 import java.util.Date;
@@ -292,6 +292,23 @@ public class EventsListener implements Listener {
     public void on(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
+            if (player.isOp() && ((GPlayer) player).shop != null) {
+                if (event.getBlock().getId() == BlockID.SIGN_POST || event.getBlock().getId() == BlockID.WALL_SIGN) {
+                    BlockEntity blockEntity = player.getLevel().getBlockEntity(event.getBlock().asBlockVector3().asVector3());
+                    if (blockEntity instanceof BlockEntitySign) {
+                        ((GPlayer) player).shop.position = event.getBlock().getFloorX() + ":" + event.getBlock().getFloorY() + ":" + event.getBlock().getFloorZ();
+                        GalacyHCF.shopsManager.addShop(((GPlayer) player).shop);
+                        player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've successfully set the shop sign.");
+                        ((BlockEntitySign) blockEntity).setText(
+                                ((GPlayer) player).shop.type == Shop.sell ? TextFormat.GREEN + "[SELL]" : TextFormat.BLUE + "[BUY]",
+                                ((GPlayer) player).shop.name + " x" + ((GPlayer) player).shop.amount,
+                                "$" + ((GPlayer) player).shop.price
+                        );
+                    }
+
+                    return;
+                }
+            }
             switch (event.getBlock().getId()) {
                 case BlockID.FENCE_GATE:
                 case BlockID.FENCE_GATE_ACACIA:
@@ -344,6 +361,31 @@ public class EventsListener implements Listener {
                         break;
                 }
                 if (!event.isCancelled()) ((GPlayer) player).applyBardItem(event.getItem().getId());
+            }
+
+            if (event.getBlock().getId() == BlockID.SIGN_POST || event.getBlock().getId() == BlockID.WALL_SIGN) {
+                Shop shop = GalacyHCF.shopsManager.shop(event.getBlock().asBlockVector3().asVector3());
+                if (shop != null) {
+                    if (shop.type == Shop.buy) {
+                        if (((GPlayer) player).balance >= shop.price) {
+                            Item item = new Item(shop.itemId, shop.amount);
+                            if (player.getInventory().canAddItem(item)) {
+                                player.getInventory().addItem(item);
+                                ((GPlayer) player).updateBalance(((GPlayer) player).balance - shop.price);
+                                player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've purchased " + shop.name + " x" + shop.amount + " for $" + shop.price + ".");
+                            } else
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough space in your inventory.");
+                        } else player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough money.");
+                    } else if (shop.type == Shop.sell) {
+                        Item item = new Item(shop.itemId, shop.amount);
+                        if (player.getInventory().contains(item)) {
+                            player.getInventory().removeItem(item);
+                            ((GPlayer) player).updateBalance(((GPlayer) player).balance + shop.price);
+                            player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've sold " + shop.name + " x" + shop.amount + " for $" + shop.price + ".");
+                        } else
+                            player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough of that to sell");
+                    }
+                }
             }
 
             if (((GPlayer) player).claimProcess != null) {
@@ -420,6 +462,15 @@ public class EventsListener implements Listener {
         Player player = event.getPlayer();
         editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
 
+        if (player.isOp()) {
+            if (event.getBlock().getId() == BlockID.SIGN_POST || event.getBlock().getId() == BlockID.WALL_SIGN) {
+                Shop shop = GalacyHCF.shopsManager.shop(event.getBlock().asBlockVector3().asVector3());
+                if (shop != null) {
+                    GalacyHCF.shopsManager.removeShop(shop);
+                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "Shop sign removed.");
+                }
+            }
+        }
         if (player instanceof GPlayer) {
             RedisPlayer data = ((GPlayer) player).redisData();
             switch (event.getBlock().getId()) {

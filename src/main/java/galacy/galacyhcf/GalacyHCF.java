@@ -4,10 +4,7 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.commands.*;
 import galacy.galacyhcf.listerners.EventsListener;
-import galacy.galacyhcf.managers.ClaimsManager;
-import galacy.galacyhcf.managers.FactionsManager;
-import galacy.galacyhcf.managers.SpawnBorder;
-import galacy.galacyhcf.managers.WorldBorder;
+import galacy.galacyhcf.managers.*;
 import galacy.galacyhcf.providers.MySQL;
 import galacy.galacyhcf.providers.Redis;
 import galacy.galacyhcf.tasks.*;
@@ -21,6 +18,7 @@ public class GalacyHCF extends PluginBase {
     public static ClaimsManager claimsManager;
     public static WorldBorder worldBorder;
     public static SpawnBorder spawnBorder;
+    public static ShopsManager shopsManager;
     public static MySQL mysql;
     public static Redis redis;
     public static SotwTask sotwTask;
@@ -42,6 +40,7 @@ public class GalacyHCF extends PluginBase {
         factionsManager = new FactionsManager(mysql);
         claimsManager = new ClaimsManager(mysql);
         worldBorder = new WorldBorder(-1000, -1000, 1000, 1000);
+        shopsManager = new ShopsManager(getDataFolder().getPath() + "shops.yml");
 
         // Commands
         getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));
