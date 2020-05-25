@@ -20,46 +20,49 @@ public class BardTask extends PluginTask<GalacyHCF> {
     public void onRun(int i) {
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
-                if (((GPlayer) player).set == SetsManager.Sets.Bard && ((GPlayer) player).factionId != 0) {
-                    Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
+                ((GPlayer) player).applySet(false);
+                if (((GPlayer) player).set == SetsManager.Sets.Bard) {
                     if (((GPlayer) player).bardEnergy < 100) ((GPlayer) player).bardEnergy++;
                     if (((GPlayer) player).bardCooldown > 0) ((GPlayer) player).bardCooldown--;
-                    switch (player.getInventory().getItemInHand().getId()) {
-                        case ItemID.SUGAR:
-                            for (GPlayer member : faction.onlineMembers()) {
-                                if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
-                                if (player.distance(member) > 20) continue;
-                                member.addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(0).setDuration(100));
-                            }
-                            break;
-                        case ItemID.FEATHER:
-                            for (GPlayer member : faction.onlineMembers()) {
-                                if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
-                                if (player.distance(member) > 20) continue;
-                                member.addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(2).setDuration(100));
-                            }
-                            break;
-                        case ItemID.IRON_INGOT:
-                            for (GPlayer member : faction.onlineMembers()) {
-                                if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
-                                if (player.distance(member) > 20) continue;
-                                member.addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(0).setDuration(100));
-                            }
-                            break;
-                        case ItemID.GHAST_TEAR:
-                            for (GPlayer member : faction.onlineMembers()) {
-                                if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
-                                if (player.distance(member) > 20) continue;
-                                member.addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(0).setDuration(100));
-                            }
-                            break;
-                        case ItemID.BLAZE_POWDER:
-                            for (GPlayer member : faction.onlineMembers()) {
-                                if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
-                                if (player.distance(member) > 20) continue;
-                                member.addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(0).setDuration(100));
-                            }
-                            break;
+                    if (((GPlayer) player).factionId != 0) {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
+                        switch (player.getInventory().getItemInHand().getId()) {
+                            case ItemID.SUGAR:
+                                for (GPlayer member : faction.onlineMembers()) {
+                                    if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
+                                    if (player.distance(member) > 20) continue;
+                                    member.addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(2).setDuration(100));
+                                }
+                                break;
+                            case ItemID.FEATHER:
+                                for (GPlayer member : faction.onlineMembers()) {
+                                    if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
+                                    if (player.distance(member) > 20) continue;
+                                    member.addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(2).setDuration(100));
+                                }
+                                break;
+                            case ItemID.IRON_INGOT:
+                                for (GPlayer member : faction.onlineMembers()) {
+                                    if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
+                                    if (player.distance(member) > 20) continue;
+                                    member.addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(0).setDuration(100));
+                                }
+                                break;
+                            case ItemID.GHAST_TEAR:
+                                for (GPlayer member : faction.onlineMembers()) {
+                                    if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
+                                    if (player.distance(member) > 20) continue;
+                                    member.addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(0).setDuration(100));
+                                }
+                                break;
+                            case ItemID.BLAZE_POWDER:
+                                for (GPlayer member : faction.onlineMembers()) {
+                                    if (Objects.equals(member.xuid, ((GPlayer) player).xuid)) continue;
+                                    if (player.distance(member) > 20) continue;
+                                    member.addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(0).setDuration(100));
+                                }
+                                break;
+                        }
                     }
                 }
             }

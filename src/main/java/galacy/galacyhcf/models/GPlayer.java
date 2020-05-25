@@ -181,7 +181,7 @@ public class GPlayer extends Player {
         return redis;
     }
 
-    public void applySet() {
+    public void applySet(boolean ItemsConsumed) {
         if (getInventory().getHelmet().getId() == ItemID.IRON_HELMET && getInventory().getChestplate().getId() == ItemID.IRON_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.IRON_LEGGINGS && getInventory().getBoots().getId() == ItemID.IRON_BOOTS) {
             if (set != SetsManager.Sets.Miner) {
                 set = SetsManager.Sets.Miner;
@@ -192,10 +192,17 @@ public class GPlayer extends Player {
         } else if (getInventory().getHelmet().getId() == ItemID.GOLD_HELMET && getInventory().getChestplate().getId() == ItemID.GOLD_CHESTPLATE && getInventory().getLeggings().getId() == ItemID.GOLD_LEGGINGS && getInventory().getBoots().getId() == ItemID.GOLD_BOOTS) {
             if (set != SetsManager.Sets.Bard) {
                 set = SetsManager.Sets.Bard;
+                removeAllEffects();
+                for (Effect effect : SetsManager.bardEffects) {
+                    addEffect(effect);
+                }
+                return;
             }
-            removeAllEffects();
-            for (Effect effect : SetsManager.minerEffects) {
-                addEffect(effect);
+            if (ItemsConsumed) {
+                removeAllEffects();
+                for (Effect effect : SetsManager.bardEffects) {
+                    addEffect(effect);
+                }
             }
         } else if (getInventory().getHelmet().getId() == ItemID.LEATHER_CAP && getInventory().getChestplate().getId() == ItemID.LEATHER_TUNIC && getInventory().getLeggings().getId() == ItemID.LEATHER_PANTS && getInventory().getBoots().getId() == ItemID.LEATHER_BOOTS) {
             if (set != SetsManager.Sets.Archer) {
@@ -237,6 +244,7 @@ public class GPlayer extends Player {
     }
 
     public void applyBardItem(int id) {
+        if (set != SetsManager.Sets.Bard) return;
         switch (id) {
             case ItemID.SUGAR:
                 if (bardCooldown != 0) {
@@ -249,7 +257,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 120);
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 120);
                 }
                 break;
 
@@ -264,7 +272,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
 
@@ -279,7 +287,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
 
@@ -294,7 +302,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 30;
                     addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
 
@@ -309,7 +317,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 40;
                     addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, this::applySet, 160);
+                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
         }

@@ -12,7 +12,6 @@ import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
-import cn.nukkit.event.entity.EntityArmorChangeEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.*;
@@ -42,7 +41,7 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void on(PlayerJoinEvent event) {
         event.setJoinMessage("");
-        if (event.getPlayer() instanceof GPlayer) ((GPlayer) event.getPlayer()).applySet();
+        if (event.getPlayer() instanceof GPlayer) ((GPlayer) event.getPlayer()).applySet(false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -304,6 +303,7 @@ public class EventsListener implements Listener {
                                 ((GPlayer) player).shop.name + " x" + ((GPlayer) player).shop.amount,
                                 "$" + ((GPlayer) player).shop.price
                         );
+                        ((GPlayer) player).shop = null;
                     }
 
                     return;
@@ -368,7 +368,7 @@ public class EventsListener implements Listener {
                 if (shop != null) {
                     if (shop.type == Shop.buy) {
                         if (((GPlayer) player).balance >= shop.price) {
-                            Item item = new Item(shop.itemId, shop.amount);
+                            Item item = new Item(shop.itemId, 0, shop.amount);
                             if (player.getInventory().canAddItem(item)) {
                                 player.getInventory().addItem(item);
                                 ((GPlayer) player).updateBalance(((GPlayer) player).balance - shop.price);
@@ -377,7 +377,7 @@ public class EventsListener implements Listener {
                                 player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough space in your inventory.");
                         } else player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have enough money.");
                     } else if (shop.type == Shop.sell) {
-                        Item item = new Item(shop.itemId, shop.amount);
+                        Item item = new Item(shop.itemId, 0, shop.amount);
                         if (player.getInventory().contains(item)) {
                             player.getInventory().removeItem(item);
                             ((GPlayer) player).updateBalance(((GPlayer) player).balance + shop.price);
@@ -533,10 +533,5 @@ public class EventsListener implements Listener {
                 }
             }
         }
-    }
-
-    @EventHandler
-    public void on(EntityArmorChangeEvent event) {
-        if (event.getEntity() instanceof GPlayer) ((GPlayer) event.getEntity()).applySet();
     }
 }

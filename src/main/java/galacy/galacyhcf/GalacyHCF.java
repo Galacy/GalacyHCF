@@ -40,7 +40,7 @@ public class GalacyHCF extends PluginBase {
         factionsManager = new FactionsManager(mysql);
         claimsManager = new ClaimsManager(mysql);
         worldBorder = new WorldBorder(-1000, -1000, 1000, 1000);
-        shopsManager = new ShopsManager(getDataFolder().getPath() + "shops.yml");
+        shopsManager = new ShopsManager(getDataFolder().getPath() + "/shops.json");
 
         // Commands
         getServer().getCommandMap().register("GalacyHCF", new FactionCommand("faction"));
@@ -54,6 +54,7 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new BalanceCommand("balance"));
         getServer().getCommandMap().register("GalacyHCF", new PayCommand("pay"));
         getServer().getCommandMap().register("GalacyHCF", new CoordsCommand("coords"));
+        getServer().getCommandMap().register("GalacyHCF", new ShopCommand("shop"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);

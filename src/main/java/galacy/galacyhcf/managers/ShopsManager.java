@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class ShopsManager {
     public File file;
-    public ArrayList<Shop> shops;
+    public ArrayList<Shop> shops = new ArrayList<>();
 
     public ShopsManager(String file) {
         this.file = new File(file);
