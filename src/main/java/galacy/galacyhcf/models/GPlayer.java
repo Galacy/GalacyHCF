@@ -1,9 +1,11 @@
 package galacy.galacyhcf.models;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Position;
 import cn.nukkit.network.SourceInterface;
+import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.TextFormat;
@@ -18,6 +20,8 @@ import galacy.galacyhcf.utils.Utils;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.UUID;
 
 public class GPlayer extends Player {
 
@@ -105,6 +109,7 @@ public class GPlayer extends Player {
         }
 
         pvptimer = redisData().pvptime > 0 && redisData().pvptime < 60 * 15;
+        updateNametag();
     }
 
 
@@ -114,11 +119,14 @@ public class GPlayer extends Player {
 
     public void leaveFaction() {
         try {
+            Faction fac = new Faction(GalacyHCF.mysql, factionId);
             GalacyHCF.mysql.exec(SQLStatements.setPlayerFactionById.
                     replace("$faction_id", "0").
                     replace("$xuid", xuid).
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
             factionId = 0;
+            fac.updateMaxDtr();
+            updateNametag();
         } catch (SQLException e) {
             getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues removing player from faction: " + e);
         }
@@ -148,6 +156,8 @@ public class GPlayer extends Player {
                     replace("$xuid", xuid).
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
             factionId = newFactionId;
+            new Faction(GalacyHCF.mysql, factionId).updateMaxDtr();
+            updateNametag();
         } catch (SQLException e) {
             getServer().getLogger().info(TextFormat.RED + "[MySQL]: Had issues adding player to faction: " + e);
         }
@@ -320,6 +330,57 @@ public class GPlayer extends Player {
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
+        }
+    }
+
+    public void setNameTag(String name, Player player) {
+        SetEntityDataPacket pk = new SetEntityDataPacket();
+        pk.eid = this.getId();
+        pk.metadata = getDataProperties().put(new StringEntityData(4, name));
+        player.dataPacket(pk);
+    }
+
+    public void setNameTag(String name, Player[] players) {
+        for (Player player : players) {
+            if (player.getId() == getId()) continue;
+            SetEntityDataPacket pk = new SetEntityDataPacket();
+            pk.eid = this.getId();
+            pk.metadata = getDataProperties().put(new StringEntityData(4, name));
+            player.dataPacket(pk);
+        }
+    }
+
+    public void setNameTag(String name, Map<UUID, Player> players) {
+        players.forEach((uuid, player) -> {
+            if (uuid != this.uuid) {
+                SetEntityDataPacket pk = new SetEntityDataPacket();
+                pk.eid = this.getId();
+                pk.metadata = getDataProperties().put(new StringEntityData(4, name));
+                player.dataPacket(pk);
+            }
+        });
+    }
+
+    public void updateNametag() {
+        if (factionId != 0) {
+            getServer().getOnlinePlayers().forEach((uuid, player) -> {
+                if (player instanceof GPlayer) {
+                    if (((GPlayer) player).factionId == factionId) {
+                        ((GPlayer) player).setNameTag(TextFormat.GREEN + player.getName(), this);
+                        setNameTag(TextFormat.GREEN + player.getName(), player);
+                    } else {
+                        ((GPlayer) player).setNameTag(TextFormat.YELLOW + player.getName(), this);
+                        setNameTag(TextFormat.YELLOW + player.getName(), player);
+                    }
+                }
+            });
+        } else {
+            setNameTag(TextFormat.YELLOW + getName(), getServer().getOnlinePlayers());
+            getServer().getOnlinePlayers().forEach((uuid, player) -> {
+                if (player instanceof GPlayer) {
+                    ((GPlayer) player).setNameTag(TextFormat.YELLOW + player.getName(), this);
+                }
+            });
         }
     }
 

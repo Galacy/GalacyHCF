@@ -30,6 +30,7 @@ import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.models.*;
 import galacy.galacyhcf.utils.Utils;
 
+import java.net.InetSocketAddress;
 import java.util.Date;
 
 public class EventsListener implements Listener {
@@ -61,6 +62,14 @@ public class EventsListener implements Listener {
     public void on(PlayerDeathEvent event) {
         Player player = event.getEntity();
         if (player instanceof GPlayer) {
+            if (((GPlayer) player).factionId != 0) {
+                Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
+                faction.updateDtr(faction.dtr - 1);
+                for (GPlayer member : faction.onlineMembers()) {
+                    member.sendMessage(Utils.prefix + TextFormat.YELLOW + "A member of your faction died, -1 DTR.");
+                }
+                GalacyHCF.dtrRegenerationTask.freeze(faction.id);
+            }
             RedisPlayer redis = ((GPlayer) player).redisData();
             redis.addDeath();
             if (redis.lives > 0) {
@@ -69,9 +78,10 @@ public class EventsListener implements Listener {
             } else {
                 redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * 30);
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
-                //InetSocketAddress address = new InetSocketAddress("178.62.193.12", 19232);
-
-                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false), 20, true);
+                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
+                    player.sendMessage(TextFormat.RED + "You're deathbanned for 30 minutes.");
+                    player.transfer(new InetSocketAddress("178.62.193.12", 19232));
+                }, 20, true);
             }
             EntityDamageEvent cause = player.getLastDamageCause();
             if (cause instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) cause).getDamager() instanceof GPlayer) {
@@ -443,6 +453,7 @@ public class EventsListener implements Listener {
             if (claim != null) {
                 if (((GPlayer) player).factionId != claim.factionId) {
                     if (claim.type == Claim.factionClaim) {
+                        if (new Faction(GalacyHCF.mysql, claim.id).dtr <= 0) return;
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You can't edit terrain on " + claim.factionName + "'s claim.");
                     }
                     event.setCancelled(true);

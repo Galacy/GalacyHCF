@@ -44,7 +44,8 @@ public class FactionsManager {
                 replace("$updated_at", currentTime).
                 replace("$name", name).
                 replace("$balance", "0").
-                replace("$dtr", "5").
+                replace("$dtr", "1.01").
+                replace("$max_dtr", "1.01").
                 replace("$leader_id", player.getLoginChainData().getXUID());
         try {
             mysql.exec(sql);

@@ -22,6 +22,7 @@ public class GalacyHCF extends PluginBase {
     public static MySQL mysql;
     public static Redis redis;
     public static SotwTask sotwTask;
+    public static DtrRegenerationTask dtrRegenerationTask;
 
     @Override
     public void onEnable() {
@@ -62,6 +63,8 @@ public class GalacyHCF extends PluginBase {
         getServer().getScheduler().scheduleRepeatingTask(new CombatTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new PvPTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new BardTask(this), 20);
+        dtrRegenerationTask = new DtrRegenerationTask(this);
+        getServer().getScheduler().scheduleRepeatingTask(dtrRegenerationTask, 20 * 120);
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);

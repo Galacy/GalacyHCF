@@ -21,12 +21,13 @@ public class Faction {
     public Date updatedAt;
     public String name;
     public int balance;
-    public int dtr;
+    public double dtr;
+    public double maxDtr;
     public String home;
     public String leaderId;
 
-    public Faction(MySQL db, int factionId) {
-        mysql = db;
+    public Faction(MySQL mysql, int factionId) {
+        this.mysql = mysql;
         String sql = SQLStatements.factionById.replace("$id", String.valueOf(factionId));
         try {
             ResultSet result = mysql.query(sql);
@@ -36,7 +37,8 @@ public class Faction {
                 updatedAt = result.getDate("updated_at");
                 name = result.getString("name");
                 balance = result.getInt("balance");
-                dtr = result.getInt("dtr");
+                dtr = result.getDouble("dtr");
+                maxDtr = result.getDouble("max_dtr");
                 home = result.getString("home");
                 leaderId = result.getString("leader_id");
             } else {
@@ -47,8 +49,8 @@ public class Faction {
         }
     }
 
-    public Faction(MySQL db, String factionName) {
-        mysql = db;
+    public Faction(MySQL mysql, String factionName) {
+        this.mysql = mysql;
         String sql = SQLStatements.factionByName.replace("$name", factionName);
         try {
             ResultSet result = mysql.query(sql);
@@ -58,7 +60,8 @@ public class Faction {
                 updatedAt = result.getDate("updated_at");
                 name = factionName;
                 balance = result.getInt("balance");
-                dtr = result.getInt("dtr");
+                dtr = result.getDouble("dtr");
+                maxDtr = result.getDouble("max_dtr");
                 home = result.getString("home");
                 leaderId = result.getString("leader_id");
             } else {
@@ -66,6 +69,23 @@ public class Faction {
             }
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues finding faction by name: " + e);
+        }
+    }
+
+    public Faction(MySQL mysql, ResultSet result) {
+        this.mysql = mysql;
+        try {
+            id = result.getInt("id");
+            createdAt = result.getDate("created_at");
+            updatedAt = result.getDate("updated_at");
+            name = result.getString("name");
+            balance = result.getInt("balance");
+            dtr = result.getDouble("dtr");
+            maxDtr = result.getDouble("max_dtr");
+            home = result.getString("home");
+            leaderId = result.getString("leader_id");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 
@@ -170,6 +190,37 @@ public class Faction {
                     replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
         } catch (SQLException e) {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction balance: " + e);
+        }
+    }
+
+    public double maxDtr() {
+        int count = members().toArray().length;
+        if (count > 5)
+            return 6.01;
+        return count + 0.01;
+    }
+
+    public void updateDtr(double dtr) {
+        try {
+            GalacyHCF.mysql.exec(SQLStatements.updateDtrById.
+                    replace("$id", String.valueOf(id)).
+                    replace("$dtr", String.valueOf(dtr)).
+                    replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction dtr: " + e);
+        }
+    }
+
+    public void updateMaxDtr() {
+        try {
+            maxDtr = maxDtr();
+            if (dtr > maxDtr) updateDtr(maxDtr);
+            GalacyHCF.mysql.exec(SQLStatements.updateMaxDtrById.
+                    replace("$id", String.valueOf(id)).
+                    replace("$max_dtr", String.valueOf(maxDtr)).
+                    replace("$updated_at", Utils.dateFormat.format(new java.util.Date())));
+        } catch (SQLException e) {
+            GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues updating faction max dtr: " + e);
         }
     }
 }

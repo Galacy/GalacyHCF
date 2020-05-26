@@ -52,10 +52,10 @@ public class ClaimsManager {
                             replace("$type", String.valueOf(Claim.spawnClaim)).
                             replace("$faction_id", "0").
                             replace("$faction_name", "Spawn").
-                            replace("$x1", "-50").
-                            replace("$x2", "50").
-                            replace("$z1", "-50").
-                            replace("$z2", "50")
+                            replace("$x1", "-25").
+                            replace("$x2", "25").
+                            replace("$z1", "-25").
+                            replace("$z2", "25")
                     );
                 } catch (SQLException e) {
                     GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues creating new claim: " + e);
