@@ -42,7 +42,10 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void on(PlayerJoinEvent event) {
         event.setJoinMessage("");
-        if (event.getPlayer() instanceof GPlayer) ((GPlayer) event.getPlayer()).applySet(false);
+        if (event.getPlayer() instanceof GPlayer) {
+            ((GPlayer) event.getPlayer()).applySet(false);
+            ((GPlayer) event.getPlayer()).updateNametag();
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -76,6 +79,7 @@ public class EventsListener implements Listener {
                 redis.updateLives(redis.lives - 1);
                 player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've been saved from death ban using your second life!");
             } else {
+                ((GPlayer) player).fightTime = 0;
                 redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * 30);
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
                 player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
@@ -91,7 +95,7 @@ public class EventsListener implements Listener {
                 String victim = TextFormat.RED + player.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + ((GPlayer) player).redisData().kills + TextFormat.DARK_RED + "]";
 
                 event.setDeathMessage(victim + TextFormat.YELLOW + " was killed by " + killer);
-            } else event.setDeathMessage(TextFormat.RED + event.getDeathMessage().getText());
+            }
         }
     }
 
@@ -209,7 +213,10 @@ public class EventsListener implements Listener {
             else {
                 Entity damager = event.getDamager();
                 if (damager instanceof GPlayer) {
-                    if (((GPlayer) player).pvptimer) {
+                    if (((GPlayer) damager).pvptimer) {
+                        ((GPlayer) damager).sendMessage(Utils.prefix + TextFormat.RED + "You can not hurt " + player.getName() + " because your PvP is not enabled yet!");
+                        event.setCancelled(true);
+                    } else if (((GPlayer) player).pvptimer) {
                         ((GPlayer) damager).sendMessage(Utils.prefix + TextFormat.RED + "You can not hurt " + player.getName() + " because his PvP is not enabled yet!");
                         event.setCancelled(true);
                     } else {
@@ -288,7 +295,7 @@ public class EventsListener implements Listener {
             } else {
                 if (((GPlayer) player).factionId != 0) {
                     Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
-                    event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "]" + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                    event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
                 } else {
                     event.setFormat(TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
                 }
@@ -453,11 +460,11 @@ public class EventsListener implements Listener {
             if (claim != null) {
                 if (((GPlayer) player).factionId != claim.factionId) {
                     if (claim.type == Claim.factionClaim) {
-                        if (new Faction(GalacyHCF.mysql, claim.id).dtr <= 0) return;
+                        if (new Faction(GalacyHCF.mysql, claim.factionId).dtr <= 0) return;
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You can't edit terrain on " + claim.factionName + "'s claim.");
                     }
                     event.setCancelled(true);
-                    ((GPlayer) player).freeze = System.currentTimeMillis() / 1000L + 1;
+                    ((GPlayer) player).freeze = System.currentTimeMillis() / 1000L + 2;
                 }
             } else {
                 if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {

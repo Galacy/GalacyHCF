@@ -109,7 +109,6 @@ public class GPlayer extends Player {
         }
 
         pvptimer = redisData().pvptime > 0 && redisData().pvptime < 60 * 15;
-        updateNametag();
     }
 
 
@@ -343,20 +342,14 @@ public class GPlayer extends Player {
     public void setNameTag(String name, Player[] players) {
         for (Player player : players) {
             if (player.getId() == getId()) continue;
-            SetEntityDataPacket pk = new SetEntityDataPacket();
-            pk.eid = this.getId();
-            pk.metadata = getDataProperties().put(new StringEntityData(4, name));
-            player.dataPacket(pk);
+            setNameTag(name, player);
         }
     }
 
     public void setNameTag(String name, Map<UUID, Player> players) {
         players.forEach((uuid, player) -> {
             if (uuid != this.uuid) {
-                SetEntityDataPacket pk = new SetEntityDataPacket();
-                pk.eid = this.getId();
-                pk.metadata = getDataProperties().put(new StringEntityData(4, name));
-                player.dataPacket(pk);
+                setNameTag(name, player);
             }
         });
     }
@@ -367,10 +360,10 @@ public class GPlayer extends Player {
                 if (player instanceof GPlayer) {
                     if (((GPlayer) player).factionId == factionId) {
                         ((GPlayer) player).setNameTag(TextFormat.GREEN + player.getName(), this);
-                        setNameTag(TextFormat.GREEN + player.getName(), player);
+                        setNameTag(TextFormat.GREEN + getName(), player);
                     } else {
                         ((GPlayer) player).setNameTag(TextFormat.YELLOW + player.getName(), this);
-                        setNameTag(TextFormat.YELLOW + player.getName(), player);
+                        setNameTag(TextFormat.YELLOW + getName(), player);
                     }
                 }
             });

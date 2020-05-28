@@ -20,16 +20,18 @@ public class DtrRegenerationTask extends PluginTask<GalacyHCF> {
 
     @Override
     public void onRun(int i) {
-        for (Faction faction : factions()) {
-            if (freeze.containsKey(faction.id)) {
-                if (freeze.get(faction.id) > System.currentTimeMillis()) continue;
-                freeze.remove(faction.id);
+        for (Object faction : factions()) {
+            if (faction instanceof Faction) {
+                if (freeze.containsKey(((Faction) faction).id)) {
+                    if (freeze.get(((Faction) faction).id) > System.currentTimeMillis()) continue;
+                    freeze.remove(((Faction) faction).id);
+                }
+                ((Faction) faction).updateDtr(Math.min(((Faction) faction).maxDtr, ((Faction) faction).dtr + 0.05));
             }
-            faction.updateDtr(Math.min(faction.maxDtr, faction.dtr + 0.05));
         }
     }
 
-    public Faction[] factions() {
+    public Object[] factions() {
         ArrayList<Faction> factions = new ArrayList<>();
         try {
             ResultSet results = GalacyHCF.mysql.query(SQLStatements.dtrFactions);
@@ -41,7 +43,7 @@ public class DtrRegenerationTask extends PluginTask<GalacyHCF> {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues getting faction members: " + e);
         }
 
-        return (Faction[]) factions.toArray();
+        return factions.toArray();
     }
 
     public void freeze(int factionId) {

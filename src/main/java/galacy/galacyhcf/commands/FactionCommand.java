@@ -505,6 +505,6 @@ public class FactionCommand extends VanillaCommand {
         sender.sendMessage(TextFormat.YELLOW + "Online: " + TextFormat.GREEN + onlineNames + TextFormat.BLUE + "(" + onlineMembers.toArray().length + "/" + members.toArray().length + ")");
         sender.sendMessage(TextFormat.YELLOW + "Leader: " + TextFormat.GREEN + faction.leaderName());
         sender.sendMessage(TextFormat.YELLOW + "DTR: " + TextFormat.GREEN + faction.dtr + "/" + faction.maxDtr());
-        sender.sendMessage(TextFormat.YELLOW + "Home: " + TextFormat.GREEN + faction.home);
+        sender.sendMessage(TextFormat.YELLOW + "Home: " + TextFormat.GREEN + (faction.home == null ? "not set." : faction.home));
     }
 }

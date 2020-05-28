@@ -15,17 +15,20 @@ import java.util.ArrayList;
 
 public class ShopsManager {
     public File file;
-    public ArrayList<Shop> shops = new ArrayList<>();
+    public ArrayList<Shop> shops;
 
     public ShopsManager(String file) {
         this.file = new File(file);
+        shops = new ArrayList<>();
         if (Files.exists(this.file.toPath())) {
             try {
                 Object obj = JSON.parse(Utils.readFileAsString(file));
                 JSONArray jsonObjects = (JSONArray) obj;
 
-                for (Object o : jsonObjects) {
-                    shops.add(new Shop((JSONObject) o));
+                if (jsonObjects != null) {
+                    for (Object o : jsonObjects) {
+                        shops.add(new Shop((JSONObject) o));
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

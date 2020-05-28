@@ -37,7 +37,7 @@ public class Faction {
                 updatedAt = result.getDate("updated_at");
                 name = result.getString("name");
                 balance = result.getInt("balance");
-                dtr = result.getDouble("dtr");
+                dtr = Math.round(result.getDouble("dtr") * 100.0) / 100.0;
                 maxDtr = result.getDouble("max_dtr");
                 home = result.getString("home");
                 leaderId = result.getString("leader_id");
@@ -60,7 +60,7 @@ public class Faction {
                 updatedAt = result.getDate("updated_at");
                 name = factionName;
                 balance = result.getInt("balance");
-                dtr = result.getDouble("dtr");
+                dtr = Math.round(result.getDouble("dtr") * 100.0) / 100.0;
                 maxDtr = result.getDouble("max_dtr");
                 home = result.getString("home");
                 leaderId = result.getString("leader_id");
