@@ -483,6 +483,15 @@ public class FactionCommand extends VanillaCommand {
                                 }
                             }
                             break;
+                        case "map":
+                            if (((GPlayer) sender).mapShown)
+                                sender.sendMessage(Utils.prefix + TextFormat.RED + "Claims map is already shown.");
+                            else {
+                                ((GPlayer) sender).showMap();
+                                sender.sendMessage(Utils.prefix + TextFormat.GREEN + "Claims map is now shown.");
+                            }
+
+                            break;
                     }
                 }
             }

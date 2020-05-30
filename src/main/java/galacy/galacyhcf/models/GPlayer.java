@@ -57,6 +57,7 @@ public class GPlayer extends Player {
     public int bardEnergy = 100;
     public int bardCooldown = 0;
     public Shop shop;
+    public boolean mapShown = false;
 
     public void loadData() {
         try {
@@ -179,6 +180,19 @@ public class GPlayer extends Player {
                 dataPacket(packet);
 
                 blocks++;
+            }
+        }, true);
+    }
+
+    public void buildPillar(int x, int y, int z, int blockId) {
+        GalacyHCF.instance.getServer().getScheduler().scheduleTask(GalacyHCF.instance, () -> {
+            for (int i = y; i < 128; i++) {
+                UpdateBlockPacket packet = new UpdateBlockPacket();
+                packet.x = x;
+                packet.y = i;
+                packet.z = z;
+                packet.blockRuntimeId = blockId;
+                dataPacket(packet);
             }
         }, true);
     }
@@ -375,6 +389,36 @@ public class GPlayer extends Player {
                 }
             });
         }
+    }
+
+    public int highestBlockAt(int x, int z) {
+        int y = 128;
+        while (getLevel().getBlockIdAt(x, y, z) == 0 && y > 0) y--;
+
+        return y;
+    }
+
+    public void showMap() {
+        int[] ids = new int[]{1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 30, 101, 102, 133, 134, 147, 148, 149, 247, 248};
+        int lastId = 0;
+        for (Claim claim : GalacyHCF.claimsManager.claims(getFloorX() - 25, getFloorX() + 25, getFloorZ() - 25, getFloorZ() + 25)) {
+            buildPillar(claim.x1, highestBlockAt(claim.x1, claim.z1) + 1, claim.z1, ids[lastId], 132);
+            buildPillar(claim.x2, highestBlockAt(claim.x2, claim.z2) + 1, claim.z2, ids[lastId], 132);
+            lastId++;
+        }
+        mapShown = true;
+        getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
+            hideMap();
+            sendMessage(Utils.prefix + TextFormat.YELLOW + "Claims map now hidden.");
+        }, 20 * 30);
+    }
+
+    public void hideMap() {
+        for (Claim claim : GalacyHCF.claimsManager.claims(getFloorX() - 50, getFloorX() + 50, getFloorZ() - 50, getFloorZ() + 50)) {
+            buildPillar(claim.x1, highestBlockAt(claim.x1, claim.z1), claim.z1, 0);
+            buildPillar(claim.x2, highestBlockAt(claim.x2, claim.z2), claim.z2, 0);
+        }
+        mapShown = false;
     }
 
     public enum Chat {

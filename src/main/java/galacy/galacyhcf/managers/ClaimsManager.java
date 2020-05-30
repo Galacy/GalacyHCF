@@ -72,13 +72,39 @@ public class ClaimsManager {
     }
 
     public boolean containsClaim(int x1, int x2, int z1, int z2) {
+        /* NOTICE: BROKEN AND NEEDS A FIX
         for (Claim claim : claims) {
             if (((claim.x1 <= x1 && claim.x2 >= x1) || (claim.x1 <= x2 && claim.x2 >= x2)) && ((claim.z1 <= z1 && claim.z2 >= z1) || (claim.z1 <= z2 && claim.z2 >= z2))) {
                 return true;
             }
+        }*/
+
+        // NOTICE: This code needs to be changed to something more optimized.
+        for (int i = x1; i < x2; i++) {
+            for (int i2 = z1; i2 < z2; i2++) {
+                if (findClaim(i, i2) != null) return true;
+            }
         }
 
         return false;
+    }
+
+    public ArrayList<Claim> claims(int x1, int x2, int z1, int z2) {
+        ArrayList<Claim> found = new ArrayList<>();
+
+        for (int i = x1; i < x2; i++) {
+            for (int i2 = z1; i2 < z2; i2++) {
+                Claim claim = findClaim(i, i2);
+                if (claim != null) {
+                    if (!found.contains(claim)) {
+                        found.add(claim);
+                    }
+                }
+            }
+        }
+
+
+        return found;
     }
 
     public Claim findClaim(int x, int z) {

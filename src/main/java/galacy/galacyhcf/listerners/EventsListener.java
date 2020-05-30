@@ -205,9 +205,15 @@ public class EventsListener implements Listener {
             event.setCancelled(true);
     }
 
+    @EventHandler
+    public void on(PlayerTeleportEvent event) {
+        if (event.getPlayer() instanceof GPlayer) ((GPlayer) event.getPlayer()).updateNametag();
+    }
+
     @EventHandler(priority = EventPriority.NORMAL)
     public void on(EntityDamageByEntityEvent event) {
         Entity player = event.getEntity();
+        if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started) return;
         if (player instanceof GPlayer) {
             if (GalacyHCF.spawnBorder.insideSpawn(player.getFloorX(), player.getFloorZ())) event.setCancelled(true);
             else {
@@ -478,7 +484,7 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void on(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        editTerrainCheck(event, event.getBlock(), event.getPlayer(), false);
+        editTerrainCheck(event, event.getBlock(), event.getPlayer(), true);
 
         if (player.isOp()) {
             if (event.getBlock().getId() == BlockID.SIGN_POST || event.getBlock().getId() == BlockID.WALL_SIGN) {
