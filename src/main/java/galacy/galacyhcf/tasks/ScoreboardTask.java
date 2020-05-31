@@ -58,6 +58,10 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
                 }
                 if (((GPlayer) player).set == SetsManager.Sets.Bard) {
                     ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.AQUA) + "Bard Energy: " + TextFormat.RESET + TextFormat.GRAY + ((GPlayer) player).bardEnergy, i);
+                    i++;
+                }
+                if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.YELLOW) + "Enderpearl: " + TextFormat.RESET + TextFormat.GRAY + (((GPlayer) player).enderpearlCountdown - (System.currentTimeMillis() / 1000)) + "s", i);
                 }
 
                 ((GPlayer) player).sb.addPlayer(player);

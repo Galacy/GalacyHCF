@@ -1,8 +1,10 @@
 package galacy.galacyhcf;
 
+import cn.nukkit.entity.Entity;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.commands.*;
+import galacy.galacyhcf.entities.EnderPearl;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.*;
 import galacy.galacyhcf.providers.MySQL;
@@ -68,6 +70,10 @@ public class GalacyHCF extends PluginBase {
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
+
+        // Entities
+        Entity.registerEntity("EnderPearl", EnderPearl.class, true);
+
 
         getLogger().info(TextFormat.GREEN + "[HCF] Everything was loaded successfully.");
     }

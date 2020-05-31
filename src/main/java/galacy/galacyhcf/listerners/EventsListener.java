@@ -137,11 +137,19 @@ public class EventsListener implements Listener {
                     ((GPlayer) player).moved = true;
                 }
             }
-            if (((GPlayer) player).fightTime != 0 || ((GPlayer) player).pvptimer) {
-                if (GalacyHCF.spawnBorder.insideSpawn(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
-
-                    player.sendMessage(Utils.prefix + TextFormat.RED + (((GPlayer) player).pvptimer ? "You can't go into claims while your pvp is disabled! You can enable it with: /pvp." : "You can't go to spawn while you're in combat!"));
+            if (((GPlayer) player).pvptimer) {
+                if (GalacyHCF.claimsManager.findClaim(event.getTo().getFloorX(), event.getTo().getFloorZ()) != null) {
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while your pvp is disabled! You can enable it with: /pvp.");
                     event.setCancelled(true);
+
+                    return;
+                }
+            }
+            if (((GPlayer) player).fightTime != 0) {
+                if (GalacyHCF.spawnBorder.insideSpawn(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go to spawn while you're in combat!");
+                    event.setCancelled(true);
+
                     return;
                 } else {
                     BorderFace face = GalacyHCF.spawnBorder.borderFace(event.getTo().getFloorX(), event.getTo().getFloorZ());
@@ -301,7 +309,10 @@ public class EventsListener implements Listener {
             } else {
                 if (((GPlayer) player).factionId != 0) {
                     Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
-                    event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                    if (player.isOp())
+                        event.setFormat(TextFormat.DARK_AQUA + "STAFF " + TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
+                    else
+                        event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
                 } else {
                     event.setFormat(TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
                 }
@@ -410,6 +421,12 @@ public class EventsListener implements Listener {
                     }
                 }
             }
+            if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
+                event.setCancelled(true);
+                player.sendMessage(Utils.prefix + TextFormat.RED + "Wait " + (((GPlayer) player).enderpearlCountdown - (System.currentTimeMillis() / 1000)) + " more seconds before using enderpearls again.");
+
+                return;
+            } else ((GPlayer) player).enderpearlCountdown = (int) (System.currentTimeMillis() / 1000) + 15;
 
             if (((GPlayer) player).claimProcess != null) {
                 if (!((GPlayer) player).claimProcess.expired()) {
@@ -464,6 +481,10 @@ public class EventsListener implements Listener {
         if (player instanceof GPlayer) {
             Claim claim = GalacyHCF.claimsManager.findClaim(block.getFloorX(), block.getFloorZ());
             if (claim != null) {
+                if (claim.type == Claim.spawnClaim) {
+                    event.setCancelled(true);
+                    return;
+                }
                 if (((GPlayer) player).factionId != claim.factionId) {
                     if (claim.type == Claim.factionClaim) {
                         if (new Faction(GalacyHCF.mysql, claim.factionId).dtr <= 0) return;

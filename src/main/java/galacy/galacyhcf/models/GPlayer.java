@@ -58,6 +58,7 @@ public class GPlayer extends Player {
     public int bardCooldown = 0;
     public Shop shop;
     public boolean mapShown = false;
+    public int enderpearlCountdown = 0;
 
     public void loadData() {
         try {
