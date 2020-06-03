@@ -17,7 +17,9 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemCompass;
 import cn.nukkit.item.ItemID;
+import cn.nukkit.item.ItemSteak;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.PlayerActionPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
@@ -30,10 +32,16 @@ import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.models.*;
 import galacy.galacyhcf.utils.Utils;
 
-import java.net.InetSocketAddress;
 import java.util.Date;
 
 public class EventsListener implements Listener {
+
+    @EventHandler
+    public void on(PlayerCommandPreprocessEvent event) {
+        String[] args = event.getMessage().split(" ");
+        if (args[0].equals("/me")) event.setCancelled(true);
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void on(PlayerCreationEvent event) {
         event.setPlayerClass(GPlayer.class);
@@ -42,9 +50,12 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void on(PlayerJoinEvent event) {
         event.setJoinMessage("");
-        if (event.getPlayer() instanceof GPlayer) {
-            ((GPlayer) event.getPlayer()).applySet(false);
-            ((GPlayer) event.getPlayer()).updateNametag();
+        Player player = event.getPlayer();
+        if (player instanceof GPlayer) {
+            if (((GPlayer) player).firstTime)
+                player.getInventory().addItem(new ItemSteak(0, 64), new ItemCompass(0, 1));
+            ((GPlayer) player).applySet(false);
+            ((GPlayer) player).updateNametag();
         }
     }
 
@@ -54,6 +65,7 @@ public class EventsListener implements Listener {
         if (player instanceof GPlayer) {
             ((GPlayer) player).loadData();
             RedisPlayer data = ((GPlayer) player).redisData();
+            if (player.isOp()) return;
             if ((System.currentTimeMillis() / 1000) < data.deathban)
                 player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () ->
                                 player.kick(TextFormat.RED + "You're deathbanned for " + Utils.timerMinutes.format(new Date((data.deathban * 1000L) - System.currentTimeMillis())), false),
@@ -78,13 +90,14 @@ public class EventsListener implements Listener {
             if (redis.lives > 0) {
                 redis.updateLives(redis.lives - 1);
                 player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've been saved from death ban using your second life!");
-            } else {
+            } else if (!player.isOp()) {
                 ((GPlayer) player).fightTime = 0;
                 redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * 30);
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
                 player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
-                    player.sendMessage(TextFormat.RED + "You're deathbanned for 30 minutes.");
-                    player.transfer(new InetSocketAddress("178.62.193.12", 19232));
+                    //player.sendMessage(TextFormat.RED + "You're deathbanned for 30 minutes.");
+                    player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false);
+                    //player.transfer(new InetSocketAddress("178.62.193.12", 19232));
                 }, 20, true);
             }
             EntityDamageEvent cause = player.getLastDamageCause();
@@ -137,8 +150,9 @@ public class EventsListener implements Listener {
                     ((GPlayer) player).moved = true;
                 }
             }
+            Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
             if (((GPlayer) player).pvptimer) {
-                if (GalacyHCF.claimsManager.findClaim(event.getTo().getFloorX(), event.getTo().getFloorZ()) != null) {
+                if (claim != null && claim.type == Claim.factionClaim) {
                     player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while your pvp is disabled! You can enable it with: /pvp.");
                     event.setCancelled(true);
 
@@ -175,8 +189,6 @@ public class EventsListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            GalacyHCF.instance.getServer().getScheduler().scheduleTask(GalacyHCF.instance, () -> {
-                Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
                 if (claim == null) {
                     if (((GPlayer) player).claim != null) {
                         if (((GPlayer) player).redisData().pvptime != 0 && !((GPlayer) player).pvptimer)
@@ -203,7 +215,6 @@ public class EventsListener implements Listener {
                         }
                     }
                 }
-            }, true);
         }
     }
 
@@ -307,14 +318,24 @@ public class EventsListener implements Listener {
                     member.sendMessage(TextFormat.DARK_GREEN + player.getName() + ": " + TextFormat.GREEN + event.getMessage());
                 }
             } else {
-                if (((GPlayer) player).factionId != 0) {
-                    Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
-                    if (player.isOp())
-                        event.setFormat(TextFormat.DARK_AQUA + "STAFF " + TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
-                    else
-                        event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                if (System.currentTimeMillis() / 1000 > (((GPlayer) player).lastChatted + 3)) {
+                    ((GPlayer) player).lastChatted = (int) System.currentTimeMillis() / 1000;
+                    ((GPlayer) player).lastMessage = event.getMessage();
+                    if (((GPlayer) player).factionId != 0) {
+                        Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
+                        if (player.isOp())
+                            event.setFormat(TextFormat.DARK_AQUA + "[STAFF] " + TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
+                        else
+                            event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                    } else {
+                        if (player.isOp())
+                            event.setFormat(TextFormat.DARK_AQUA + "[STAFF] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                        else
+                            event.setFormat(TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                    }
                 } else {
-                    event.setFormat(TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                    event.setCancelled(true);
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "Please don't spam in the chat.");
                 }
             }
         }
@@ -394,7 +415,17 @@ public class EventsListener implements Listener {
                         editTerrainCheck(event, event.getBlock(), player, false);
                         break;
                 }
-                if (!event.isCancelled()) ((GPlayer) player).applyBardItem(event.getItem().getId());
+                if (!event.isCancelled()) {
+                    ((GPlayer) player).applyBardItem(event.getItem().getId());
+                    if (event.getItem().getId() == ItemID.ENDER_PEARL) {
+                        if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
+                            event.setCancelled(true);
+                            player.sendMessage(Utils.prefix + TextFormat.RED + "Wait " + (((GPlayer) player).enderpearlCountdown - (System.currentTimeMillis() / 1000)) + " more seconds before using enderpearls again.");
+
+                            return;
+                        } else ((GPlayer) player).enderpearlCountdown = (int) (System.currentTimeMillis() / 1000) + 15;
+                    }
+                }
             }
 
             if (event.getBlock().getId() == BlockID.SIGN_POST || event.getBlock().getId() == BlockID.WALL_SIGN) {
@@ -421,17 +452,17 @@ public class EventsListener implements Listener {
                     }
                 }
             }
-            if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
-                event.setCancelled(true);
-                player.sendMessage(Utils.prefix + TextFormat.RED + "Wait " + (((GPlayer) player).enderpearlCountdown - (System.currentTimeMillis() / 1000)) + " more seconds before using enderpearls again.");
-
-                return;
-            } else ((GPlayer) player).enderpearlCountdown = (int) (System.currentTimeMillis() / 1000) + 15;
 
             if (((GPlayer) player).claimProcess != null) {
                 if (!((GPlayer) player).claimProcess.expired()) {
                     if (player.distance(player.getServer().getDefaultLevel().getSpawnLocation()) < 300) {
                         player.sendMessage(Utils.prefix + TextFormat.RED + "You have to be at least 300 blocks away from spawn to claim.");
+
+                        return;
+                    }
+                    if (GalacyHCF.claimsManager.isRoad((int) event.getBlock().x, (int) event.getBlock().z)) {
+                        player.sendMessage(Utils.prefix + TextFormat.RED + "You can't claim on the roads.");
+
                         return;
                     }
                     switch (((GPlayer) player).claimProcess.state) {
@@ -494,7 +525,9 @@ public class EventsListener implements Listener {
                     ((GPlayer) player).freeze = System.currentTimeMillis() / 1000L + 2;
                 }
             } else {
-                if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {
+                if (GalacyHCF.claimsManager.isRoad((int) block.x, (int) block.z)) {
+                    event.setCancelled(true);
+                } else if (block.distance(player.getServer().getDefaultLevel().getSpawnLocation().asVector3f().asVector3()) < 300) {
                     event.setCancelled(true);
                     player.sendMessage(Utils.prefix + TextFormat.RED + "You have to be at least 300 blocks away from spawn to edit terrain.");
                 }

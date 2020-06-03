@@ -24,7 +24,6 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
             sotwTime = GalacyHCF.sotwTask.time > 60 * 60 ? Utils.timerHour.format(new Date(GalacyHCF.sotwTask.time * 1000L)) : Utils.timerMinutes.format(new Date(GalacyHCF.sotwTask.time * 1000L));
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
-                player.sendPopup(player.getFloorX() + ":" + player.getFloorY() + ":" + player.getFloorZ());
                 if (((GPlayer) player).sb == null)
                     ((GPlayer) player).sb = new ScoreboardAPI.Companion.Builder().build();
                 else ((GPlayer) player).sb.removePlayer(player);

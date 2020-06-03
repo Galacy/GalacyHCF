@@ -173,5 +173,9 @@ public class ClaimsManager {
             GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues deleting all faction claims: " + e);
         }
     }
+
+    public boolean isRoad(int x, int z) {
+        return (x < 10 && x > -10) || (z < 10 && z > -10);
+    }
 }
 

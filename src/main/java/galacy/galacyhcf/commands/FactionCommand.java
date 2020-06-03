@@ -265,7 +265,14 @@ public class FactionCommand extends VanillaCommand {
                                     if (args.length == 1)
                                         sender.sendMessage(Utils.prefix + TextFormat.RED + "/f deposit <amount>");
                                     else {
-                                        int newBalance = Integer.parseInt(args[1]);
+                                        int newBalance;
+                                        try {
+                                            newBalance = Integer.parseInt(args[1]);
+                                        } catch (NumberFormatException exception) {
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "The amount has to be a real number. /f deposit <amount>");
+
+                                            break;
+                                        }
                                         if (((GPlayer) sender).balance < newBalance)
                                             sender.sendMessage(Utils.prefix + TextFormat.RED + "That's more money than what you have!");
                                         else {
@@ -340,7 +347,14 @@ public class FactionCommand extends VanillaCommand {
                                     if (args.length == 1)
                                         sender.sendMessage(Utils.prefix + TextFormat.RED + "/f withdraw <amount>");
                                     else {
-                                        int newBalance = Integer.parseInt(args[1]);
+                                        int newBalance;
+                                        try {
+                                            newBalance = Integer.parseInt(args[1]);
+                                        } catch (NumberFormatException exception) {
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "The amount has to be a real number. /f withdraw <amount>");
+
+                                            break;
+                                        }
                                         if (faction.balance < newBalance)
                                             sender.sendMessage(Utils.prefix + TextFormat.RED + "Your faction doesn't have that much money!");
                                         else {

@@ -19,7 +19,14 @@ public class PayCommand extends VanillaCommand {
                 Player player = sender.getServer().getPlayer(args[0]);
                 if (player != null) {
                     if (player instanceof GPlayer) {
-                        int amount = Integer.parseInt(args[1]);
+                        int amount;
+                        try {
+                            amount = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException exception) {
+                            sender.sendMessage(Utils.prefix + TextFormat.RED + "The amount has to be a real number. /pay <player> <amount>.");
+
+                            return false;
+                        }
                         if (amount < 1)
                             sender.sendMessage(Utils.prefix + TextFormat.RED + "Your payment can't be this small, dude seriously!");
                         else {

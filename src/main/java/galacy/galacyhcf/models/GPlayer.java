@@ -59,6 +59,9 @@ public class GPlayer extends Player {
     public Shop shop;
     public boolean mapShown = false;
     public int enderpearlCountdown = 0;
+    public boolean firstTime = false;
+    public int lastChatted = 0;
+    public String lastMessage = "";
 
     public void loadData() {
         try {
@@ -89,12 +92,13 @@ public class GPlayer extends Player {
                 }
             } else {
                 GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "[MySQL]: Couldn't find the player in the database, creating a new one.");
+                firstTime = true;
                 try {
                     String currentTime = Utils.dateFormat.format(new java.util.Date());
                     GalacyHCF.mysql.exec(SQLStatements.createPlayer.
                             replace("$created_at", currentTime).
                             replace("$updated_at", currentTime).
-                            replace("$username", username).
+                            replace("$username", getName()).
                             replace("$xuid", getLoginChainData().getXUID()).
                             replace("$rank", "0").
                             replace("$balance", "0").

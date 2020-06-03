@@ -8,12 +8,19 @@ import cn.nukkit.entity.projectile.EntityEnderPearl;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerTeleportEvent;
+import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Sound;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.BlockVector3;
 import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.utils.TextFormat;
+import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.models.Claim;
+import galacy.galacyhcf.models.GPlayer;
+import galacy.galacyhcf.utils.Utils;
 
 public class EnderPearl extends EntityEnderPearl {
     private BlockVector3 last;
@@ -57,7 +64,14 @@ public class EnderPearl extends EntityEnderPearl {
                 this.close();
                 return false;
             }
-
+            if (this.shootingEntity instanceof GPlayer) {
+                GPlayer player = (GPlayer) this.shootingEntity;
+                Claim claim = GalacyHCF.claimsManager.findClaim((int) this.x, (int) this.z);
+                if (verifyClaim(player, claim)) {
+                    this.close();
+                    return false;
+                }
+            }
             last = collided.asBlockVector3();
         }
 
@@ -65,6 +79,11 @@ public class EnderPearl extends EntityEnderPearl {
     }
 
     private void teleport() {
+        if (this.shootingEntity instanceof GPlayer) {
+            GPlayer player = (GPlayer) this.shootingEntity;
+            Claim claim = GalacyHCF.claimsManager.findClaim((int) this.x, (int) this.z);
+            if (verifyClaim(player, claim)) return;
+        }
         this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(this.x) + 0.5D, this.y - 1, (double) NukkitMath.floorDouble(this.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
         if ((((Player) this.shootingEntity).getGamemode() & 1) == 0) {
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, this.shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5.0F, 0.0F));
@@ -73,7 +92,30 @@ public class EnderPearl extends EntityEnderPearl {
         this.level.addSound(this, Sound.MOB_ENDERMEN_PORTAL);
     }
 
+    private boolean verifyClaim(GPlayer player, Claim claim) {
+        if (claim != null) {
+            if (claim.type == Claim.spawnClaim) {
+                player.sendMessage(Utils.prefix + TextFormat.RED + "You can't pearl into spawn.");
+                player.getInventory().addItem(new Item(ItemID.ENDER_PEARL, 0, 1));
+
+                return true;
+            }
+            if (player.pvptimer) {
+                player.sendMessage(Utils.prefix + TextFormat.RED + "You can't pearl into claims while you have your pvp disabled.");
+                player.getInventory().addItem(new Item(ItemID.ENDER_PEARL, 0, 1));
+
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void teleport(BlockVector3 last) {
+        if (this.shootingEntity instanceof GPlayer) {
+            GPlayer player = (GPlayer) this.shootingEntity;
+            Claim claim = GalacyHCF.claimsManager.findClaim(last.x, last.z);
+            if (verifyClaim(player, claim)) return;
+        }
         this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(last.x) + 0.5D, last.y, (double) NukkitMath.floorDouble(last.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
         if ((((Player) this.shootingEntity).getGamemode() & 1) == 0) {
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, this.shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5.0F, 0.0F));
