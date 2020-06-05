@@ -2,6 +2,7 @@ package galacy.galacyhcf.models;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.data.StringEntityData;
+import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Position;
 import cn.nukkit.network.SourceInterface;
@@ -62,6 +63,19 @@ public class GPlayer extends Player {
     public boolean firstTime = false;
     public int lastChatted = 0;
     public String lastMessage = "";
+
+    // RANKS
+    public static final int DEFAULT = 0;
+    public static final int MEMBER = 1;
+    public static final int STAR = 2;
+    public static final int NOVA = 3;
+    public static final int NEBULA = 4;
+    public static final int SOLAR = 5;
+    public static final int GALACY = 6;
+    public static final int PARTNER = 7;
+    public static final int MOD = 8;
+    public static final int ADMIN = 9;
+    public static final int DEVELOPER = 10;
 
     public void loadData() {
         try {
@@ -285,6 +299,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120));
+                    getInventory().remove(new Item(id, 0, 1));
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 120);
                 }
                 break;
@@ -300,6 +315,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160));
+                    getInventory().remove(new Item(id, 0, 1));
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
@@ -315,6 +331,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160));
+                    getInventory().remove(new Item(id, 0, 1));
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
@@ -330,6 +347,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 30;
                     addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100));
+                    getInventory().remove(new Item(id, 0, 1));
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
@@ -345,6 +363,7 @@ public class GPlayer extends Player {
                     bardCooldown = 15;
                     bardEnergy -= 40;
                     addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80));
+                    getInventory().remove(new Item(id, 0, 1));
                     getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
                 }
                 break;
@@ -424,6 +443,43 @@ public class GPlayer extends Player {
             buildPillar(claim.x2, highestBlockAt(claim.x2, claim.z2), claim.z2, 0);
         }
         mapShown = false;
+    }
+
+    public String rankName() {
+        switch (rank) {
+            case MEMBER:
+                return TextFormat.BOLD + "" + TextFormat.GRAY + getName() + TextFormat.RESET;
+
+            case STAR:
+                return TextFormat.BOLD + "" + TextFormat.WHITE + getName() + TextFormat.RESET;
+
+            case NOVA:
+                return TextFormat.BOLD + "" + TextFormat.YELLOW + getName() + TextFormat.RESET;
+
+            case NEBULA:
+                return TextFormat.DARK_GREEN + "✦ " + TextFormat.BOLD + "" + TextFormat.GREEN + getName() + TextFormat.RESET;
+
+            case SOLAR:
+                return TextFormat.YELLOW + "✷ " + TextFormat.BOLD + "" + TextFormat.GOLD + getName() + TextFormat.RESET;
+
+            case GALACY:
+                return TextFormat.LIGHT_PURPLE + "✪ " + TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + getName() + TextFormat.RESET;
+
+            case PARTNER:
+                return TextFormat.BOLD + "" + TextFormat.RED + getName() + TextFormat.RESET;
+
+            case MOD:
+                return TextFormat.BOLD + "" + TextFormat.AQUA + "[STAFF] " + getName() + TextFormat.RESET;
+
+            case ADMIN:
+                return TextFormat.BOLD + "" + TextFormat.DARK_AQUA + "[STAFF] " + getName() + TextFormat.RESET;
+
+            case DEVELOPER:
+                return TextFormat.BOLD + "" + TextFormat.GREEN + "[DEVELOPER] " + getName() + TextFormat.RESET;
+
+            default:
+                return "";
+        }
     }
 
     public enum Chat {

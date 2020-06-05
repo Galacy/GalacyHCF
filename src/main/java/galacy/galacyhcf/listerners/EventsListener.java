@@ -20,6 +20,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemCompass;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.item.ItemSteak;
+import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.PlayerActionPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
@@ -64,6 +65,14 @@ public class EventsListener implements Listener {
         Player player = event.getPlayer();
         if (player instanceof GPlayer) {
             ((GPlayer) player).loadData();
+            if (((GPlayer) player).rank == GPlayer.ADMIN || ((GPlayer) player).rank == GPlayer.MOD) {
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.ban.player", player);
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.gamemode.spectator", player);
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.gamemode.survival", player);
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.kick", player);
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.unban.player", player);
+                player.getServer().getPluginManager().subscribeToPermission("nukkit.command.teleport", player);
+            }
             RedisPlayer data = ((GPlayer) player).redisData();
             if (player.isOp()) return;
             if ((System.currentTimeMillis() / 1000) < data.deathban)
@@ -92,23 +101,51 @@ public class EventsListener implements Listener {
                 player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've been saved from death ban using your second life!");
             } else if (!player.isOp()) {
                 ((GPlayer) player).fightTime = 0;
-                redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * 30);
-                player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for 30 minutes.");
-                player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
-                    //player.sendMessage(TextFormat.RED + "You're deathbanned for 30 minutes.");
-                    player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false);
-                    //player.transfer(new InetSocketAddress("178.62.193.12", 19232));
-                }, 20, true);
+                int banTime;
+                switch (((GPlayer) player).rank) {
+                    case GPlayer.STAR:
+                        banTime = 55;
+                        break;
+                    case GPlayer.NOVA:
+                        banTime = 45;
+                        break;
+                    case GPlayer.NEBULA:
+                        banTime = 35;
+                        break;
+                    case GPlayer.SOLAR:
+                        banTime = 25;
+                        break;
+                    case GPlayer.GALACY:
+                        banTime = 15;
+                        break;
+                    case GPlayer.PARTNER:
+                    case GPlayer.ADMIN:
+                    case GPlayer.MOD:
+                    case GPlayer.DEVELOPER:
+                        banTime = 0;
+                        break;
+                    default:
+                        banTime = 60;
+                        break;
+                }
+                if (banTime != 0) {
+                    redis.updateDeathban((int) (System.currentTimeMillis() / 1000) + 60 * banTime);
+                    player.sendMessage(Utils.prefix + TextFormat.RED + "You're deathbanned for " + banTime + " minutes.");
+                    player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
+                        //player.sendMessage(TextFormat.RED + "You're deathbanned for 30 minutes.");
+                        player.kick(TextFormat.RED + "You're deathbanned for 30 minutes.", false);
+                        //player.transfer(new InetSocketAddress("178.62.193.12", 19232));
+                    }, 20, true);
+                }
             }
             EntityDamageEvent cause = player.getLastDamageCause();
+            String victim = TextFormat.RED + player.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + ((GPlayer) player).redisData().kills + TextFormat.DARK_RED + "]";
             if (cause instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent) cause).getDamager() instanceof GPlayer) {
                 GPlayer damager = (GPlayer) ((EntityDamageByEntityEvent) cause).getDamager();
                 damager.redisData().addKill();
                 String killer = TextFormat.RED + damager.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + damager.redisData().kills + TextFormat.DARK_RED + "]";
-                String victim = TextFormat.RED + player.getName() + TextFormat.DARK_RED + "[" + TextFormat.RED + ((GPlayer) player).redisData().kills + TextFormat.DARK_RED + "]";
-
                 event.setDeathMessage(victim + TextFormat.YELLOW + " was killed by " + killer);
-            }
+            } else event.setDeathMessage(victim + TextFormat.YELLOW + " died."); // TODO: More specefic messages.
         }
     }
 
@@ -119,6 +156,7 @@ public class EventsListener implements Listener {
         if (player instanceof GPlayer) {
             if (((GPlayer) player).fightTime != 0) {
                 player.kill();
+                player.teleport(player.getServer().getDefaultLevel().getSpawnLocation());
             }
             ((GPlayer) player).redisData().update(GalacyHCF.redis);
         }
@@ -152,12 +190,13 @@ public class EventsListener implements Listener {
             }
             Claim claim = GalacyHCF.claimsManager.findClaim(player.getFloorX(), player.getFloorZ());
             if (((GPlayer) player).pvptimer) {
-                if (claim != null && claim.type == Claim.factionClaim) {
-                    player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while your pvp is disabled! You can enable it with: /pvp.");
-                    event.setCancelled(true);
+                if (claim != null)
+                    if (claim.type == Claim.factionClaim) {
+                        player.sendMessage(Utils.prefix + TextFormat.RED + "You can't go into claims while your pvp is disabled! You can enable it with: /pvp.");
+                        event.setCancelled(true);
 
-                    return;
-                }
+                        return;
+                    }
             }
             if (((GPlayer) player).fightTime != 0) {
                 if (GalacyHCF.spawnBorder.insideSpawn(event.getTo().getFloorX(), event.getTo().getFloorZ())) {
@@ -169,7 +208,7 @@ public class EventsListener implements Listener {
                     BorderFace face = GalacyHCF.spawnBorder.borderFace(event.getTo().getFloorX(), event.getTo().getFloorZ());
                     if (face == null) return;
                     // NOTICE: This has to be optimized.
-                    if (face.start.distance(new Vector3(player.x, player.y, player.z)) <= 5 || face.end.distance(new Vector3(player.x, player.y, player.z)) <= 5) {
+                    if (new Vector2(0, 0).distance(new Vector2(player.x, player.z)) <= GalacyHCF.spawnBorder.maxX + 50) {
                         if (((GPlayer) player).borderFace == null) {
                             face.build(player);
                             ((GPlayer) player).borderFace = face;
@@ -290,6 +329,12 @@ public class EventsListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onChat(PlayerChatEvent event) {
         Player player = event.getPlayer();
+        if (event.getMessage().startsWith("./")) {
+            event.setCancelled(true);
+            // TODO Actually dispatch command.
+
+            return;
+        }
         if (player instanceof GPlayer) {
             if (((GPlayer) player).claimProcess != null) {
                 if (((GPlayer) player).claimProcess.state == ClaimProcess.State.waiting) {
@@ -318,20 +363,14 @@ public class EventsListener implements Listener {
                     member.sendMessage(TextFormat.DARK_GREEN + player.getName() + ": " + TextFormat.GREEN + event.getMessage());
                 }
             } else {
-                if (System.currentTimeMillis() / 1000 > (((GPlayer) player).lastChatted + 3)) {
+                if (System.currentTimeMillis() / 1000 > (((GPlayer) player).lastChatted + 3) || ((GPlayer) player).rank != GPlayer.DEFAULT) {
                     ((GPlayer) player).lastChatted = (int) System.currentTimeMillis() / 1000;
                     ((GPlayer) player).lastMessage = event.getMessage();
                     if (((GPlayer) player).factionId != 0) {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
-                        if (player.isOp())
-                            event.setFormat(TextFormat.DARK_AQUA + "[STAFF] " + TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
-                        else
-                            event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                        event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + ((GPlayer) player).rankName() + TextFormat.DARK_GRAY + " 〉 " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
                     } else {
-                        if (player.isOp())
-                            event.setFormat(TextFormat.DARK_AQUA + "[STAFF] " + TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
-                        else
-                            event.setFormat(TextFormat.GRAY + player.getName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage().toLowerCase()));
+                        event.setFormat(((GPlayer) player).rankName() + TextFormat.DARK_GRAY + " 〉 " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
                     }
                 } else {
                     event.setCancelled(true);
