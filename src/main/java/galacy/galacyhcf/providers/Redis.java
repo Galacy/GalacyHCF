@@ -42,9 +42,9 @@ public class Redis {
 
             return new RedisPlayer(xuid, json.getIntValue("pvptime"), json.getIntValue("deathban"), json.getIntValue("lives"), json.getIntValue("kills"), json.getIntValue("deaths"),
                     json.getIntValue("diamonds"), json.getIntValue("gold"), json.getIntValue("iron"), json.getIntValue("redstone"), json.getIntValue("lapis"),
-                    json.getIntValue("galacy_kit"), json.getIntValue("diamond_kit"), json.getIntValue("rogue_kit"), json.getIntValue("bard_kit"), json.getIntValue("miner_kit"));
+                    json.getLongValue("galacy_kit"), json.getLongValue("diamond_kit"), json.getLongValue("rogue_kit"), json.getLongValue("bard_kit"), json.getLongValue("archer_kit"), json.getLongValue("miner_kit"));
         } else {
-            RedisPlayer player = new RedisPlayer(xuid, 15 * 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            RedisPlayer player = new RedisPlayer(xuid, 15 * 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             setPlayer(xuid, player);
 
             return player;

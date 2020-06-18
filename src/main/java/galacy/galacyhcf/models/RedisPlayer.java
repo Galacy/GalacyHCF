@@ -50,12 +50,15 @@ public class RedisPlayer {
     @JSONField(name = "bard_kit")
     public long bardKit;
 
+    @JSONField(name = "archer_kit")
+    public long archerKit;
+
     @JSONField(name = "miner_kit")
     public long minerKit;
 
     public RedisPlayer(String xuid, int pvptime, int deathban, int lives, int kills, int deaths,
                        int diamonds, int gold, int iron, int redstone, int lapis,
-                       long galacyKit, long diamondKit, long rogueKit, long bardKit, long minerKit) {
+                       long galacyKit, long diamondKit, long rogueKit, long bardKit, long archerKit, long minerKit) {
         this.xuid = xuid;
         this.pvptime = pvptime;
         this.deathban = deathban;
@@ -71,6 +74,7 @@ public class RedisPlayer {
         this.diamondKit = diamondKit;
         this.rogueKit = rogueKit;
         this.bardKit = bardKit;
+        this.archerKit = archerKit;
         this.minerKit = minerKit;
     }
 

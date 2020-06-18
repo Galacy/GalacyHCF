@@ -384,6 +384,7 @@ public class GPlayer extends Player {
 
     public void useRogueSword(GPlayer player, EntityDamageByEntityEvent event) {
         if (set != SetsManager.Sets.Rogue) return;
+        if (rogueCooldown > 0) return;
         if (getInventory().getItemInHand().getId() != ItemID.GOLD_SWORD) return;
         if (player.getAim(this) > 0.5) {
             switch (set) {
@@ -391,15 +392,17 @@ public class GPlayer extends Player {
                 case Archer:
                 case Miner:
                 case Rogue:
-                    event.setDamage((float) player.getMaxHealth() / 3);
+                    event.setDamage((float) player.getMaxHealth() / 2);
                     break;
                 default:
-                    event.setDamage((float) player.getMaxHealth() / 5);
+                    event.setDamage((float) player.getMaxHealth() / 3);
                     break;
             }
 
+            sendMessage(Utils.prefix + TextFormat.GREEN + "Back-stabbed " + player.getName() + ".");
+            rogueCooldown = 15;
             addEffect(Effect.getEffect(Effect.SLOWNESS).setDuration(20 * 60));
-            getInventory().remove(getInventory().getItemInHand());
+            getInventory().setItemInHand(null);
         }
     }
 
@@ -480,8 +483,8 @@ public class GPlayer extends Player {
 
     public void hideMap() {
         for (Claim claim : GalacyHCF.claimsManager.claims(getFloorX() - 50, getFloorX() + 50, getFloorZ() - 50, getFloorZ() + 50)) {
-            buildPillar(claim.x1, highestBlockAt(claim.x1, claim.z1), claim.z1, 0);
-            buildPillar(claim.x2, highestBlockAt(claim.x2, claim.z2), claim.z2, 0);
+            buildPillar(claim.x1, highestBlockAt(claim.x1, claim.z1) + 1, claim.z1, 0);
+            buildPillar(claim.x2, highestBlockAt(claim.x2, claim.z2) + 1, claim.z2, 0);
         }
         mapShown = false;
     }
@@ -546,32 +549,32 @@ public class GPlayer extends Player {
         switch (kit) {
             case Galacy:
                 for (Item item : KitsManager.Galacy()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
             case Diamond:
                 for (Item item : KitsManager.Diamond()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
             case Rogue:
                 for (Item item : KitsManager.Rogue()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
             case Archer:
                 for (Item item : KitsManager.Archer()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
             case Bard:
                 for (Item item : KitsManager.Bard()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
             case Miner:
                 for (Item item : KitsManager.Miner()) {
-                    forceAddItem(item);
+                    forceAddArmor(item);
                 }
                 break;
         }
@@ -580,6 +583,22 @@ public class GPlayer extends Player {
     public void forceAddItem(Item item) {
         if (getInventory().canAddItem(item)) getInventory().addItem(item);
         else getLevel().dropItem(asVector3f().asVector3(), item);
+    }
+
+    public void forceAddArmor(Item item) {
+        if (item.isHelmet()) {
+            if (getInventory().getHelmet() == null) getInventory().setHelmet(item);
+            else forceAddItem(item);
+        } else if (item.isChestplate()) {
+            if (getInventory().getChestplate() == null) getInventory().setChestplate(item);
+            else forceAddItem(item);
+        } else if (item.isLeggings()) {
+            if (getInventory().getLeggings() == null) getInventory().setLeggings(item);
+            else forceAddItem(item);
+        } else if (item.isBoots()) {
+            if (getInventory().getBoots() == null) getInventory().setBoots(item);
+            else forceAddItem(item);
+        } else forceAddItem(item);
     }
 
     public enum Chat {

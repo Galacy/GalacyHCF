@@ -95,15 +95,6 @@ public class EnderPearl extends EntityProjectile {
                 this.close();
                 return false;
             }
-            /*
-            if (this.shootingEntity instanceof GPlayer) {
-                GPlayer player = (GPlayer) this.shootingEntity;
-                Claim claim = GalacyHCF.claimsManager.findClaim((int) this.x, (int) this.z);
-                if (verifyClaim(player, claim)) {
-                    this.close();
-                    return false;
-                }
-            }*/
             last = collided.asBlockVector3();
         }
 
@@ -154,7 +145,7 @@ public class EnderPearl extends EntityProjectile {
             Claim claim = GalacyHCF.claimsManager.findClaim((int) this.x, (int) this.z);
             if (verifyClaim(player, claim)) return;
         }
-        this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(this.x) + 0.5D, this.y - 1, (double) NukkitMath.floorDouble(this.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
+        this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(this.x) + 0.5D, this.y, (double) NukkitMath.floorDouble(this.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
         if ((((Player) this.shootingEntity).getGamemode() & 1) == 0) {
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, this.shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5.0F, 0.0F));
         }

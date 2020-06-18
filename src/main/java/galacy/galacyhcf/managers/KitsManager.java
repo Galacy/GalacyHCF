@@ -45,9 +45,9 @@ public class KitsManager {
                 bow,
                 new ItemArrow(0, 64),
                 new ItemPotatoBaked(0, 64),
-                new ItemPotion(ItemPotion.SPEED_LONG, 3),
+                new ItemPotion(ItemPotion.SPEED_II, 3),
                 new ItemPotion(ItemPotion.FIRE_RESISTANCE_LONG, 2),
-                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 22)
+                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 26)
         };
     }
 
@@ -81,36 +81,40 @@ public class KitsManager {
                 leg,
                 boots,
                 new ItemPotatoBaked(0, 64),
-                new ItemPotion(ItemPotion.SPEED_LONG, 3),
+                new ItemPotion(ItemPotion.SPEED_II, 3),
                 new ItemPotion(ItemPotion.FIRE_RESISTANCE_LONG, 2),
-                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 24)
+                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 28)
         };
     }
 
     public static Item[] Archer() {
-        Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Sword");
+        Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Sword");
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
-        Item helmet = Item.get(ItemID.LEATHER_CAP).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Helmet");
+        Item helmet = Item.get(ItemID.LEATHER_CAP).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Helmet");
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item chest = Item.get(ItemID.LEATHER_TUNIC).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Chestplate");
+        Item chest = Item.get(ItemID.LEATHER_TUNIC).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Chestplate");
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item leg = Item.get(ItemID.LEATHER_PANTS).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Leggins");
+        Item leg = Item.get(ItemID.LEATHER_PANTS).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Leggins");
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item boots = Item.get(ItemID.LEATHER_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Boots");
+        Item boots = Item.get(ItemID.LEATHER_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Boots");
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item bow = Item.get(ItemID.BOW).setCustomName(TextFormat.BOLD + "" + TextFormat.YELLOW + "Archer Bow");
+        Item bow = Item.get(ItemID.BOW).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Bow");
         bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_BOW_POWER).setLevel(2));
+        bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_BOW_FLAME).setLevel(1));
+        bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_BOW_INFINITY).setLevel(1));
+        bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(2));
+
 
         return new Item[]{
                 sword,
@@ -123,7 +127,7 @@ public class KitsManager {
                 new ItemArrow(0, 64),
                 new ItemPotatoBaked(0, 64),
                 new ItemPotion(ItemPotion.FIRE_RESISTANCE_LONG, 2),
-                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 25)
+                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 29)
         };
     }
 
@@ -133,19 +137,19 @@ public class KitsManager {
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
-        Item helmet = Item.get(ItemID.CHAIN_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Helmet");
+        Item helmet = Item.get(ItemID.GOLD_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Helmet");
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item chest = Item.get(ItemID.CHAIN_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Chestplate");
+        Item chest = Item.get(ItemID.GOLD_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Chestplate");
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item leg = Item.get(ItemID.CHAIN_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Leggins");
+        Item leg = Item.get(ItemID.GOLD_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Leggins");
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
-        Item boots = Item.get(ItemID.CHAIN_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Boots");
+        Item boots = Item.get(ItemID.GOLD_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Boots");
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
@@ -159,7 +163,7 @@ public class KitsManager {
                 new ItemSwordGold(0, 4),
                 new ItemPotatoBaked(0, 64),
                 new ItemPotion(ItemPotion.FIRE_RESISTANCE_LONG, 2),
-                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 23)
+                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 27)
         };
     }
 
@@ -198,7 +202,7 @@ public class KitsManager {
                 new ItemGhastTear(0, 64),
                 new ItemBlazePowder(0, 64),
                 new ItemPotatoBaked(0, 64),
-                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 24)
+                new ItemPotionSplash(ItemPotion.INSTANT_HEALTH_II, 28)
         };
     }
 

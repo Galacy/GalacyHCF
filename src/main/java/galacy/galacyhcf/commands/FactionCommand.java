@@ -237,7 +237,7 @@ public class FactionCommand extends VanillaCommand {
                                         sender.sendMessage(Utils.prefix + TextFormat.RED + "You can only set your home in the normal world.");
                                     else {
                                         Claim found = GalacyHCF.claimsManager.findClaim(((GPlayer) sender).getFloorX(), ((GPlayer) sender).getFloorZ());
-                                        if (found != null && found.factionId != ((GPlayer) sender).factionId)
+                                        if (found == null || found.factionId != ((GPlayer) sender).factionId)
                                             sender.sendMessage(Utils.prefix + TextFormat.RED + "You can only set your home inside of your faction's claim.");
                                         else {
                                             faction.updateHome((int) ((GPlayer) sender).getX(), (int) ((GPlayer) sender).getY(), (int) ((GPlayer) sender).getZ());

@@ -64,7 +64,7 @@ public class EventsListener implements Listener {
             ((GPlayer) player).applySet(false);
             player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
                 ((GPlayer) player).updateNametag();
-                DummyBossBar bar = new DummyBossBar.Builder(player).text(TextFormat.BOLD + "" + TextFormat.GOLD + "You're playing on Galacy.me!").color(BlockColor.GRAY_BLOCK_COLOR).build();
+                DummyBossBar bar = new DummyBossBar.Builder(player).text(TextFormat.BOLD + "" + TextFormat.GRAY + "You're playing on " + TextFormat.GOLD + "Galacy.me | 19132").color(BlockColor.GRAY_BLOCK_COLOR).build();
                 player.createBossBar(bar);
             }, 20);
         }
@@ -304,6 +304,8 @@ public class EventsListener implements Listener {
                             ((GPlayer) damager).useRogueSword((GPlayer) player, event);
                             checkTeleport((GPlayer) player);
                             checkTeleport((GPlayer) damager);
+                            checkFight((GPlayer) player);
+                            checkFight((GPlayer) damager);
                         } else if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
                             event.setCancelled(true);
                             ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
@@ -311,6 +313,8 @@ public class EventsListener implements Listener {
                             ((GPlayer) damager).useRogueSword((GPlayer) player, event);
                             checkTeleport((GPlayer) player);
                             checkTeleport((GPlayer) damager);
+                            checkFight((GPlayer) player);
+                            checkFight((GPlayer) damager);
                         }
                     }
                 } else {
@@ -328,7 +332,6 @@ public class EventsListener implements Listener {
             player.stuckTeleport = false;
             player.moved = true;
         }
-        checkFight(player);
     }
 
     public void checkFight(GPlayer player) {
@@ -731,6 +734,20 @@ public class EventsListener implements Listener {
                             if (player.rank < GPlayer.NOVA) {
                                 player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Nova rank or higher from the store.");
                             } else {
+                                if (player.redisData().archerKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Archer);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Archer kit!");
+                                    player.redis.archerKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Archer Kit!");
+                            }
+                            break;
+
+                        case 4:
+                            if (player.rank < GPlayer.STAR) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Star rank or higher from the store.");
+                            } else {
                                 if (player.redisData().bardKit < System.currentTimeMillis()) {
                                     player.giveKit(KitsManager.Kits.Bard);
                                     player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Bard kit!");
@@ -741,7 +758,7 @@ public class EventsListener implements Listener {
                             }
                             break;
 
-                        case 4:
+                        case 5:
                             if (player.rank < GPlayer.STAR) {
                                 player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Star rank or higher from the store.");
                             } else {
@@ -757,6 +774,18 @@ public class EventsListener implements Listener {
                     }
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void on(PlayerItemConsumeEvent event) {
+        switch (event.getItem().getId()) {
+            case ItemID.GOLDEN_APPLE:
+            case ItemID.GOLDEN_APPLE_ENCHANTED:
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(Utils.prefix + TextFormat.RED + "This item is not allowed on the server.");
+
+                break;
         }
     }
 }

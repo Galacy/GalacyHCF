@@ -50,7 +50,7 @@ public class BorderFace {
 
                 for (int x = x1; x <= x2; x++) {
                     for (int z = z1; z <= z2; z++) {
-                        for (int y = (int) start.y; y < ((int) start.y + 3); y++) {
+                        for (int y = (int) start.y; y < ((int) start.y + 4); y++) {
                             UpdateBlockPacket packet = new UpdateBlockPacket();
                             packet.x = x;
                             packet.y = y;
