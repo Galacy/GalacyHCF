@@ -4,7 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.block.BlockFenceGate;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityEnderPearl;
+import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerTeleportEvent;
@@ -22,11 +22,42 @@ import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.GPlayer;
 import galacy.galacyhcf.utils.Utils;
 
-public class EnderPearl extends EntityEnderPearl {
+import java.util.Iterator;
+
+public class EnderPearl extends EntityProjectile {
+    public static final int NETWORK_ID = 87;
     private BlockVector3 last;
+
+    public EnderPearl(FullChunk chunk, CompoundTag nbt) {
+        this(chunk, nbt, null);
+    }
+
+    public int getNetworkId() {
+        return 87;
+    }
+
+    public float getWidth() {
+        return 0.25F;
+    }
+
+    public float getLength() {
+        return 0.25F;
+    }
+
+    public float getHeight() {
+        return 0.25F;
+    }
+
+    protected float getGravity() {
+        return 0.03F;
+    }
 
     public EnderPearl(FullChunk chunk, CompoundTag nbt, Entity shootingEntity) {
         super(chunk, nbt, shootingEntity);
+    }
+
+    protected float getDrag() {
+        return 0.01F;
     }
 
     @Override
@@ -64,6 +95,7 @@ public class EnderPearl extends EntityEnderPearl {
                 this.close();
                 return false;
             }
+            /*
             if (this.shootingEntity instanceof GPlayer) {
                 GPlayer player = (GPlayer) this.shootingEntity;
                 Claim claim = GalacyHCF.claimsManager.findClaim((int) this.x, (int) this.z);
@@ -71,11 +103,49 @@ public class EnderPearl extends EntityEnderPearl {
                     this.close();
                     return false;
                 }
-            }
+            }*/
             last = collided.asBlockVector3();
         }
 
-        return super.onUpdate(currentTick);
+        return doUpdate(currentTick);
+    }
+
+    protected boolean doUpdate(int currentTick) {
+        if (this.closed) {
+            return false;
+        } else {
+            timing.startTiming();
+            boolean hasUpdate = super.onUpdate(currentTick);
+            if (this.isCollided && this.shootingEntity instanceof Player) {
+                boolean portal = false;
+                Iterator var4 = getCollisionBlocks().iterator();
+
+                while (var4.hasNext()) {
+                    Block collided = (Block) var4.next();
+                    if (collided.getId() == 90) {
+                        portal = true;
+                    }
+                }
+
+                if (!portal) {
+                    teleport();
+                }
+            }
+
+            if (this.age > 1200 || this.isCollided) {
+                kill();
+                hasUpdate = true;
+            }
+
+            timing.stopTiming();
+            return hasUpdate;
+        }
+    }
+
+    @Override
+    public void onCollideWithEntity(Entity entity) {
+        teleport();
+        super.onCollideWithEntity(entity);
     }
 
     private void teleport() {

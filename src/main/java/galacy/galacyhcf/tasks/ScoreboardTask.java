@@ -21,7 +21,8 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
     public void onRun(int i) {
         String sotwTime = "";
         if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started)
-            sotwTime = GalacyHCF.sotwTask.time > 60 * 60 ? Utils.timerHour.format(new Date(GalacyHCF.sotwTask.time * 1000L)) : Utils.timerMinutes.format(new Date(GalacyHCF.sotwTask.time * 1000L));
+            sotwTime = Utils.timerHour.format(new Date(GalacyHCF.sotwTask.time * 1000L));
+
         for (Player player : GalacyHCF.instance.getServer().getOnlinePlayers().values()) {
             if (player instanceof GPlayer) {
                 if (((GPlayer) player).sb == null)
@@ -44,11 +45,11 @@ public class ScoreboardTask extends PluginTask<GalacyHCF> {
                     i++;
                 }
                 if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started) {
-                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.DARK_BLUE) + "SoTW: " + TextFormat.RESET + TextFormat.GRAY + sotwTime, i);
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.BLUE) + "SoTW: " + TextFormat.RESET + TextFormat.GRAY + sotwTime, i);
                     i++;
                 }
                 if (((GPlayer) player).redisData().pvptime > 0) {
-                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.RED) + "PvP: " + TextFormat.RESET + TextFormat.GRAY + Utils.timerMinutes.format(new Date(((GPlayer) player).redisData().pvptime * 1000L)), i);
+                    ((GPlayer) player).sb.setScore(i, TextFormat.BOLD + String.valueOf(TextFormat.RED) + "PvP Timer: " + TextFormat.RESET + TextFormat.GRAY + Utils.timerMinutes.format(new Date(((GPlayer) player).redisData().pvptime * 1000L)), i);
                     i++;
                 }
                 if (((GPlayer) player).coords) {

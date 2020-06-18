@@ -1,11 +1,16 @@
 package galacy.galacyhcf.models;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.data.StringEntityData;
+import cn.nukkit.entity.weather.EntityLightning;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Position;
+import cn.nukkit.math.Vector2;
 import cn.nukkit.network.SourceInterface;
+import cn.nukkit.network.protocol.AddEntityPacket;
 import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.potion.Effect;
@@ -13,6 +18,7 @@ import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
+import galacy.galacyhcf.managers.KitsManager;
 import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.providers.SQLStatements;
 import galacy.galacyhcf.scoreboardapi.scoreboard.SimpleScoreboard;
@@ -57,6 +63,7 @@ public class GPlayer extends Player {
     public SetsManager.Sets set = SetsManager.Sets.Nothing;
     public int bardEnergy = 100;
     public int bardCooldown = 0;
+    public int rogueCooldown = 0;
     public Shop shop;
     public boolean mapShown = false;
     public int enderpearlCountdown = 0;
@@ -264,110 +271,144 @@ public class GPlayer extends Player {
             if (set != SetsManager.Sets.Nothing) {
                 switch (set) {
                     case Bard:
+                        for (Effect effect : SetsManager.bardEffects) removeEffect(effect.getId());
                         sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Bard set.");
                         break;
 
                     case Miner:
+                        for (Effect effect : SetsManager.minerEffects) removeEffect(effect.getId());
+                        if (hasEffect(Effect.INVISIBILITY)) removeEffect(Effect.INVISIBILITY);
                         sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Miner set.");
                         break;
 
                     case Archer:
+                        for (Effect effect : SetsManager.archerEffects) removeEffect(effect.getId());
                         sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Archer set.");
                         break;
 
                     case Rogue:
+                        for (Effect effect : SetsManager.rogueEffects) removeEffect(effect.getId());
                         sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Rogue set.");
                         break;
                 }
                 set = SetsManager.Sets.Nothing;
-                removeAllEffects();
             }
         }
     }
 
     public void applyBardItem(int id) {
         if (set != SetsManager.Sets.Bard) return;
+        if (bardCooldown != 0) {
+            sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+            return;
+        }
+
         switch (id) {
             case ItemID.SUGAR:
-                if (bardCooldown != 0) {
-                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-                    return;
-                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
-                    addEffect(Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120));
+                    Effect effect = Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120);
                     getInventory().remove(new Item(id, 0, 1));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 120);
+                    forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.FEATHER:
-                if (bardCooldown != 0) {
-                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-                    return;
-                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
-                    addEffect(Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160));
+                    Effect effect = Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160);
                     getInventory().remove(new Item(id, 0, 1));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
+                    forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.IRON_INGOT:
-                if (bardCooldown != 0) {
-                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-                    return;
-                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
-                    addEffect(Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160));
+                    Effect effect = Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160);
                     getInventory().remove(new Item(id, 0, 1));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
+                    forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.GHAST_TEAR:
-                if (bardCooldown != 0) {
-                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-                    return;
-                }
                 if (bardEnergy < 30) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 30;
-                    addEffect(Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100));
+                    Effect effect = Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100);
                     getInventory().remove(new Item(id, 0, 1));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
+                    forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.BLAZE_POWDER:
-                if (bardCooldown != 0) {
-                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-                    return;
-                }
                 if (bardEnergy <= 40) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 40;
-                    addEffect(Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80));
+                    Effect effect = Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80);
                     getInventory().remove(new Item(id, 0, 1));
-                    getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), 160);
+                    forceTeamEffects(effect);
                 }
                 break;
         }
+    }
+
+    public void forceTeamEffects(Effect effect) {
+        if (factionId == 0) {
+            addEffect(effect);
+            getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> applySet(true), effect.getDuration());
+
+            return;
+        }
+        Faction faction = new Faction(GalacyHCF.mysql, factionId);
+        for (GPlayer member : faction.onlineMembers()) {
+            if (distance(member) > 10) continue;
+            member.addEffect(effect);
+            getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> member.applySet(true), effect.getDuration());
+        }
+
+    }
+
+    public void useRogueSword(GPlayer player, EntityDamageByEntityEvent event) {
+        if (set != SetsManager.Sets.Rogue) return;
+        if (getInventory().getItemInHand().getId() != ItemID.GOLD_SWORD) return;
+        if (player.getAim(this) > 0.5) {
+            switch (set) {
+                case Bard:
+                case Archer:
+                case Miner:
+                case Rogue:
+                    event.setDamage((float) player.getMaxHealth() / 3);
+                    break;
+                default:
+                    event.setDamage((float) player.getMaxHealth() / 5);
+                    break;
+            }
+
+            addEffect(Effect.getEffect(Effect.SLOWNESS).setDuration(20 * 60));
+            getInventory().remove(getInventory().getItemInHand());
+        }
+    }
+
+    public double getAim(Entity entity) {
+        Vector2 directionPlane = getDirectionPlane();
+        Double dot1 = directionPlane.dot(new Vector2(x, z));
+        Double dot2 = directionPlane.dot(new Vector2(entity.x, entity.z));
+
+        return dot1 - dot2;
     }
 
     public void setNameTag(String name, Player player) {
@@ -457,13 +498,13 @@ public class GPlayer extends Player {
                 return TextFormat.BOLD + "" + TextFormat.YELLOW + getName() + TextFormat.RESET;
 
             case NEBULA:
-                return TextFormat.DARK_GREEN + "✦ " + TextFormat.BOLD + "" + TextFormat.GREEN + getName() + TextFormat.RESET;
+                return TextFormat.DARK_GREEN + "Nebula " + TextFormat.BOLD + "" + TextFormat.GREEN + getName() + TextFormat.RESET;
 
             case SOLAR:
-                return TextFormat.YELLOW + "✷ " + TextFormat.BOLD + "" + TextFormat.GOLD + getName() + TextFormat.RESET;
+                return TextFormat.YELLOW + "Solar " + TextFormat.BOLD + "" + TextFormat.GOLD + getName() + TextFormat.RESET;
 
             case GALACY:
-                return TextFormat.LIGHT_PURPLE + "✪ " + TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + getName() + TextFormat.RESET;
+                return TextFormat.LIGHT_PURPLE + "[Galacy] " + TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + getName() + TextFormat.RESET;
 
             case PARTNER:
                 return TextFormat.BOLD + "" + TextFormat.RED + getName() + TextFormat.RESET;
@@ -478,8 +519,67 @@ public class GPlayer extends Player {
                 return TextFormat.BOLD + "" + TextFormat.GREEN + "[DEVELOPER] " + getName() + TextFormat.RESET;
 
             default:
-                return "";
+                return TextFormat.GRAY + getName();
         }
+    }
+
+    public void strikeLightning() {
+        AddEntityPacket pk = new AddEntityPacket();
+        pk.entityUniqueId = cn.nukkit.entity.Entity.entityCount++;
+        pk.entityRuntimeId = cn.nukkit.entity.Entity.entityCount++;
+        pk.type = EntityLightning.NETWORK_ID;
+        pk.x = (float) getX();
+        pk.y = (float) getY();
+        pk.z = (float) getZ();
+        pk.speedX = 0.0f;
+        pk.speedY = 0.0f;
+        pk.speedZ = 0.0f;
+        pk.yaw = (float) getYaw();
+        pk.pitch = (float) getPitch();
+
+        for (Player p : getLevel().getPlayers().values()) {
+            p.dataPacket(pk);
+        }
+    }
+
+    public void giveKit(KitsManager.Kits kit) {
+        switch (kit) {
+            case Galacy:
+                for (Item item : KitsManager.Galacy()) {
+                    forceAddItem(item);
+                }
+                break;
+            case Diamond:
+                for (Item item : KitsManager.Diamond()) {
+                    forceAddItem(item);
+                }
+                break;
+            case Rogue:
+                for (Item item : KitsManager.Rogue()) {
+                    forceAddItem(item);
+                }
+                break;
+            case Archer:
+                for (Item item : KitsManager.Archer()) {
+                    forceAddItem(item);
+                }
+                break;
+            case Bard:
+                for (Item item : KitsManager.Bard()) {
+                    forceAddItem(item);
+                }
+                break;
+            case Miner:
+                for (Item item : KitsManager.Miner()) {
+                    forceAddItem(item);
+                }
+                break;
+        }
+    }
+
+    public void forceAddItem(Item item) {
+        if (getInventory().canAddItem(item)) getInventory().addItem(item);
+        else getLevel().dropItem(asVector3f().asVector3(), item);
     }
 
     public enum Chat {

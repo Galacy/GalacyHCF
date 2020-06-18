@@ -5,6 +5,7 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.commands.*;
 import galacy.galacyhcf.entities.EnderPearl;
+import galacy.galacyhcf.entities.ItemDrop;
 import galacy.galacyhcf.listerners.EventsListener;
 import galacy.galacyhcf.managers.*;
 import galacy.galacyhcf.providers.MySQL;
@@ -58,6 +59,7 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new PayCommand("pay"));
         getServer().getCommandMap().register("GalacyHCF", new CoordsCommand("coords"));
         getServer().getCommandMap().register("GalacyHCF", new ShopCommand("shop"));
+        getServer().getCommandMap().register("GalacyHCF", new KitCommand("kit"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);
@@ -72,6 +74,7 @@ public class GalacyHCF extends PluginBase {
 
         // Entities
         Entity.registerEntity("EnderPearl", EnderPearl.class, true);
+        Entity.registerEntity("Item", ItemDrop.class, true);
 
 
         getLogger().info(TextFormat.GREEN + "[HCF] Everything was loaded successfully.");

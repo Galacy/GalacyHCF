@@ -14,8 +14,11 @@ import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.entity.ExplosionPrimeEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.form.response.FormResponseSimple;
+import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemCompass;
 import cn.nukkit.item.ItemID;
@@ -25,10 +28,13 @@ import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.PlayerActionPacket;
 import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.potion.Effect;
+import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.DummyBossBar;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
+import galacy.galacyhcf.managers.KitsManager;
 import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.models.*;
 import galacy.galacyhcf.utils.Utils;
@@ -56,7 +62,11 @@ public class EventsListener implements Listener {
             if (((GPlayer) player).firstTime)
                 player.getInventory().addItem(new ItemSteak(0, 64), new ItemCompass(0, 1));
             ((GPlayer) player).applySet(false);
-            ((GPlayer) player).updateNametag();
+            player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
+                ((GPlayer) player).updateNametag();
+                DummyBossBar bar = new DummyBossBar.Builder(player).text(TextFormat.BOLD + "" + TextFormat.GOLD + "You're playing on Galacy.me!").color(BlockColor.GRAY_BLOCK_COLOR).build();
+                player.createBossBar(bar);
+            }, 20);
         }
     }
 
@@ -72,6 +82,7 @@ public class EventsListener implements Listener {
                 player.getServer().getPluginManager().subscribeToPermission("nukkit.command.kick", player);
                 player.getServer().getPluginManager().subscribeToPermission("nukkit.command.unban.player", player);
                 player.getServer().getPluginManager().subscribeToPermission("nukkit.command.teleport", player);
+                player.recalculatePermissions();
             }
             RedisPlayer data = ((GPlayer) player).redisData();
             if (player.isOp()) return;
@@ -86,11 +97,14 @@ public class EventsListener implements Listener {
     public void on(PlayerDeathEvent event) {
         Player player = event.getEntity();
         if (player instanceof GPlayer) {
+
+            ((GPlayer) player).strikeLightning();
+            ((GPlayer) player).fightTime = 0;
             if (((GPlayer) player).factionId != 0) {
                 Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
                 faction.updateDtr(faction.dtr - 1);
                 for (GPlayer member : faction.onlineMembers()) {
-                    member.sendMessage(Utils.prefix + TextFormat.YELLOW + "A member of your faction died, -1 DTR.");
+                    member.sendMessage(Utils.prefix + TextFormat.YELLOW + "A member of your faction died.");
                 }
                 GalacyHCF.dtrRegenerationTask.freeze(faction.id);
             }
@@ -234,6 +248,7 @@ public class EventsListener implements Listener {
                             ((GPlayer) player).pvptimer = true;
                         player.sendMessage(TextFormat.YELLOW + "Now Leaving " + TextFormat.GRAY + ((GPlayer) player).claim.factionName + TextFormat.YELLOW + " (" + (((GPlayer) player).claim.type == 1 ? TextFormat.GREEN + "Non-Deathban" : TextFormat.RED + "Deathban") + TextFormat.YELLOW + ")");
                         player.sendMessage(TextFormat.YELLOW + "Now Entering " + TextFormat.GRAY + "Wilderness" + TextFormat.YELLOW + " (" + TextFormat.RED + "Deathban" + TextFormat.YELLOW + ")");
+
                         ((GPlayer) player).claim = null;
                     }
                 } else {
@@ -270,6 +285,7 @@ public class EventsListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void on(EntityDamageByEntityEvent event) {
+        event.setKnockBack(0.37F);
         Entity player = event.getEntity();
         if (GalacyHCF.sotwTask != null && GalacyHCF.sotwTask.started) return;
         if (player instanceof GPlayer) {
@@ -285,14 +301,15 @@ public class EventsListener implements Listener {
                         event.setCancelled(true);
                     } else {
                         if (((GPlayer) player).factionId == 0 || ((GPlayer) damager).factionId == 0) {
+                            ((GPlayer) damager).useRogueSword((GPlayer) player, event);
                             checkTeleport((GPlayer) player);
                             checkTeleport((GPlayer) damager);
                         } else if (((GPlayer) player).factionId == ((GPlayer) damager).factionId) {
                             event.setCancelled(true);
                             ((GPlayer) damager).sendMessage(TextFormat.YELLOW + "You can not hurt " + TextFormat.GREEN + player.getName());
                         } else {
+                            ((GPlayer) damager).useRogueSword((GPlayer) player, event);
                             checkTeleport((GPlayer) player);
-
                             checkTeleport((GPlayer) damager);
                         }
                     }
@@ -327,12 +344,11 @@ public class EventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onChat(PlayerChatEvent event) {
+    public void on(PlayerChatEvent event) {
         Player player = event.getPlayer();
         if (event.getMessage().startsWith("./")) {
             event.setCancelled(true);
-            // TODO Actually dispatch command.
-
+            player.getServer().dispatchCommand(player, event.getMessage().substring(2));
             return;
         }
         if (player instanceof GPlayer) {
@@ -368,9 +384,9 @@ public class EventsListener implements Listener {
                     ((GPlayer) player).lastMessage = event.getMessage();
                     if (((GPlayer) player).factionId != 0) {
                         Faction faction = new Faction(GalacyHCF.mysql, ((GPlayer) player).factionId);
-                        event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + ((GPlayer) player).rankName() + TextFormat.DARK_GRAY + " 〉 " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
+                        event.setFormat(TextFormat.DARK_GRAY + "[" + TextFormat.GRAY + faction.name + TextFormat.DARK_GRAY + "] " + ((GPlayer) player).rankName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
                     } else {
-                        event.setFormat(((GPlayer) player).rankName() + TextFormat.DARK_GRAY + " 〉 " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
+                        event.setFormat(((GPlayer) player).rankName() + TextFormat.DARK_GRAY + ": " + TextFormat.GRAY + TextFormat.clean(event.getMessage()));
                     }
                 } else {
                     event.setCancelled(true);
@@ -378,6 +394,11 @@ public class EventsListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void on(ExplosionPrimeEvent event) {
+        event.setBlockBreaking(false);
     }
 
 
@@ -404,14 +425,7 @@ public class EventsListener implements Listener {
                 }
             }
             switch (event.getBlock().getId()) {
-                case BlockID.FENCE_GATE:
-                case BlockID.FENCE_GATE_ACACIA:
-                case BlockID.FENCE_GATE_BIRCH:
-                case BlockID.FENCE_GATE_DARK_OAK:
-                case BlockID.FENCE_GATE_SPRUCE:
-                case BlockID.FENCE_GATE_JUNGLE:
-                case BlockID.IRON_TRAPDOOR:
-                case BlockID.TRAPDOOR:
+                case BlockID.LEVER:
                 case BlockID.CHEST:
                 case BlockID.TRAPPED_CHEST:
                 case BlockID.ENDER_CHEST:
@@ -428,6 +442,17 @@ public class EventsListener implements Listener {
                 case BlockID.DROPPER:
                 case BlockID.DISPENSER:
                 case BlockID.TNT:
+                    editTerrainCheck(event, event.getBlock(), player, false);
+                    break;
+
+                case BlockID.FENCE_GATE:
+                case BlockID.FENCE_GATE_ACACIA:
+                case BlockID.FENCE_GATE_BIRCH:
+                case BlockID.FENCE_GATE_DARK_OAK:
+                case BlockID.FENCE_GATE_SPRUCE:
+                case BlockID.FENCE_GATE_JUNGLE:
+                case BlockID.IRON_TRAPDOOR:
+                case BlockID.TRAPDOOR:
                 case BlockID.DARK_OAK_DOOR_BLOCK:
                 case BlockID.ACACIA_DOOR_BLOCK:
                 case BlockID.BIRCH_DOOR_BLOCK:
@@ -454,7 +479,7 @@ public class EventsListener implements Listener {
                         editTerrainCheck(event, event.getBlock(), player, false);
                         break;
                 }
-                if (!event.isCancelled()) {
+                if (!event.isCancelled() && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
                     ((GPlayer) player).applyBardItem(event.getItem().getId());
                     if (event.getItem().getId() == ItemID.ENDER_PEARL) {
                         if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
@@ -646,6 +671,89 @@ public class EventsListener implements Listener {
                             packet.blockRuntimeId = 31;
                             event.getPlayer().dataPacket(packet);
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void on(PlayerFormRespondedEvent event) {
+        if (event.wasClosed() || event.getResponse() == null) return;
+        if (event.getPlayer() instanceof GPlayer) {
+            GPlayer player = (GPlayer) event.getPlayer();
+            if (event.getWindow() instanceof FormWindowSimple) {
+                if (event.getResponse() instanceof FormResponseSimple) {
+                    switch (((FormResponseSimple) event.getResponse()).getClickedButtonId()) {
+                        case 0:
+                            if (player.rank < GPlayer.GALACY) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Galacy rank from the store.");
+                            } else {
+                                if (player.redisData().galacyKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Galacy);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Galacy kit!");
+                                    player.redis.galacyKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Galacy Kit!");
+                            }
+                            break;
+
+                        case 1:
+                            if (player.rank < GPlayer.SOLAR) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Solar rank or higher from the store.");
+                            } else {
+                                if (player.redisData().diamondKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Diamond);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Diamond kit!");
+                                    player.redis.diamondKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Diamond Kit!");
+                            }
+                            break;
+
+                        case 2:
+                            if (player.rank < GPlayer.NEBULA) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Nebula rank or higher from the store.");
+                            } else {
+                                if (player.redisData().rogueKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Rogue);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Rogue kit!");
+                                    player.redis.rogueKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Rogue Kit!");
+                            }
+                            break;
+
+                        case 3:
+                            if (player.rank < GPlayer.NOVA) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Nova rank or higher from the store.");
+                            } else {
+                                if (player.redisData().bardKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Bard);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Bard kit!");
+                                    player.redis.bardKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Bard Kit!");
+                            }
+                            break;
+
+                        case 4:
+                            if (player.rank < GPlayer.STAR) {
+                                player.sendMessage(Utils.prefix + TextFormat.RED + "You don't have access to this kit, you have to purchase the Star rank or higher from the store.");
+                            } else {
+                                if (player.redisData().minerKit < System.currentTimeMillis()) {
+                                    player.giveKit(KitsManager.Kits.Miner);
+                                    player.sendMessage(Utils.prefix + TextFormat.GREEN + "You've received your Miner kit!");
+                                    player.redis.minerKit = System.currentTimeMillis() + KitsManager.cooldown;
+                                    player.redis.update(GalacyHCF.redis);
+                                } else
+                                    player.sendMessage(Utils.prefix + TextFormat.YELLOW + "You're still on cooldown for Miner Kit!");
+                            }
+                            break;
                     }
                 }
             }

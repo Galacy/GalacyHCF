@@ -7,7 +7,7 @@ import galacy.galacyhcf.utils.Utils;
 
 public class SotwTask extends PluginTask<GalacyHCF> {
 
-    public int time = 60 * 60;
+    public int time = 7200;
     public boolean started = true;
 
     public SotwTask(GalacyHCF plugin) {

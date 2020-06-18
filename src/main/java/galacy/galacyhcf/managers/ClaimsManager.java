@@ -82,6 +82,7 @@ public class ClaimsManager {
         // NOTICE: This code needs to be changed to something more optimized.
         for (int i = x1; i < x2; i++) {
             for (int i2 = z1; i2 < z2; i2++) {
+                if (isRoad(i, i2)) return true;
                 if (findClaim(i, i2) != null) return true;
             }
         }
@@ -134,7 +135,7 @@ public class ClaimsManager {
         int x2 = Math.max((int) process.firstPos.x, (int) process.secondPos.x);
         int z2 = Math.max((int) process.firstPos.z, (int) process.secondPos.z);
 
-        if (containsClaim(x1, x2, z1, z2))
+        if (containsClaim(x1 - 1, x2 + 1, z1 - 1, z2 + 1))
             process.player.sendMessage(Utils.prefix + TextFormat.RED + "Sorry but this land has already been claimed.");
         else {
             Faction faction = new Faction(GalacyHCF.mysql, process.player.factionId);
