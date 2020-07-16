@@ -3,11 +3,18 @@ package galacy.galacyhcf;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
+import galacy.galacyhcf.borders.SpawnBorder;
+import galacy.galacyhcf.borders.WorldBorder;
 import galacy.galacyhcf.commands.*;
 import galacy.galacyhcf.entities.EnderPearl;
 import galacy.galacyhcf.entities.ItemDrop;
+import galacy.galacyhcf.entities.LogoutVillager;
+import galacy.galacyhcf.listerners.Elevator;
 import galacy.galacyhcf.listerners.EventsListener;
-import galacy.galacyhcf.managers.*;
+import galacy.galacyhcf.listerners.FoundDiamond;
+import galacy.galacyhcf.managers.ClaimsManager;
+import galacy.galacyhcf.managers.FactionsManager;
+import galacy.galacyhcf.managers.ShopsManager;
 import galacy.galacyhcf.providers.MySQL;
 import galacy.galacyhcf.providers.Redis;
 import galacy.galacyhcf.tasks.*;
@@ -60,6 +67,8 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new CoordsCommand("coords"));
         getServer().getCommandMap().register("GalacyHCF", new ShopCommand("shop"));
         getServer().getCommandMap().register("GalacyHCF", new KitCommand("kit"));
+        // FIXME: getServer().getCommandMap().register("GalacyHCF", new CraftCommand("craft"));
+        getServer().getCommandMap().register("GalacyHCF", new TLCommand("tl"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);
@@ -71,13 +80,15 @@ public class GalacyHCF extends PluginBase {
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
+        getServer().getPluginManager().registerEvents(new Elevator(), this);
+        getServer().getPluginManager().registerEvents(new FoundDiamond(), this);
 
         // Entities
         Entity.registerEntity("EnderPearl", EnderPearl.class, true);
         Entity.registerEntity("Item", ItemDrop.class, true);
+        Entity.registerEntity("LogoutVillager", LogoutVillager.class, true);
 
-
-        getLogger().info(TextFormat.GREEN + "[HCF] Everything was loaded successfully.");
+        getLogger().info(TextFormat.GREEN + "[HCF] Everything is loaded successfully.");
     }
 
     @Override

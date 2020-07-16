@@ -2,6 +2,7 @@ package galacy.galacyhcf.entities;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.Block;
+import cn.nukkit.block.BlockDoor;
 import cn.nukkit.block.BlockFenceGate;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.projectile.EntityProjectile;
@@ -27,6 +28,7 @@ import java.util.Iterator;
 public class EnderPearl extends EntityProjectile {
     public static final int NETWORK_ID = 87;
     private BlockVector3 last;
+    private boolean itemGivenBack = false;
 
     public EnderPearl(FullChunk chunk, CompoundTag nbt) {
         this(chunk, nbt, null);
@@ -75,6 +77,14 @@ public class EnderPearl extends EntityProjectile {
                     return false;
                 }
             }
+            if (collided instanceof BlockDoor) {
+                if (!((BlockDoor) collided).isOpen()) {
+                    this.level.addSound(this, Sound.MOB_ENDERMEN_PORTAL);
+                    this.close();
+
+                    return false;
+                }
+            }
         }
         if (last.distanceSquared(asBlockVector3()) >= 1) {
             Block collided = this.getLevel().getBlock(getPosition());
@@ -87,14 +97,25 @@ public class EnderPearl extends EntityProjectile {
             if (collided instanceof BlockFenceGate) {
                 if (((BlockFenceGate) collided).isOpen()) {
                     teleport();
-
                 } else {
                     teleport(last);
-
                 }
                 this.close();
+
                 return false;
             }
+
+            if (collided instanceof BlockDoor) {
+                if (((BlockDoor) collided).isOpen()) {
+                    teleport();
+                } else {
+                    teleport(last);
+                }
+                this.close();
+
+                return false;
+            }
+
             last = collided.asBlockVector3();
         }
 
@@ -147,6 +168,7 @@ public class EnderPearl extends EntityProjectile {
         }
         this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(this.x) + 0.5D, this.y, (double) NukkitMath.floorDouble(this.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
         if ((((Player) this.shootingEntity).getGamemode() & 1) == 0) {
+            this.shootingEntity.resetFallDistance();
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, this.shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5.0F, 0.0F));
         }
 
@@ -157,13 +179,19 @@ public class EnderPearl extends EntityProjectile {
         if (claim != null) {
             if (claim.type == Claim.spawnClaim) {
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You can't pearl into spawn.");
-                player.getInventory().addItem(new Item(ItemID.ENDER_PEARL, 0, 1));
+                if (!itemGivenBack) {
+                    player.getInventory().addItem(Item.get(ItemID.ENDER_PEARL, 0, 1));
+                    itemGivenBack = true;
+                }
 
                 return true;
             }
             if (player.pvptimer) {
                 player.sendMessage(Utils.prefix + TextFormat.RED + "You can't pearl into claims while you have your pvp disabled.");
-                player.getInventory().addItem(new Item(ItemID.ENDER_PEARL, 0, 1));
+                if (!itemGivenBack) {
+                    player.getInventory().addItem(Item.get(ItemID.ENDER_PEARL, 0, 1));
+                    itemGivenBack = true;
+                }
 
                 return true;
             }
@@ -179,6 +207,7 @@ public class EnderPearl extends EntityProjectile {
         }
         this.shootingEntity.teleport(new Vector3((double) NukkitMath.floorDouble(last.x) + 0.5D, last.y, (double) NukkitMath.floorDouble(last.z) + 0.5D), PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
         if ((((Player) this.shootingEntity).getGamemode() & 1) == 0) {
+            this.shootingEntity.resetFallDistance();
             this.shootingEntity.attack(new EntityDamageByEntityEvent(this, this.shootingEntity, EntityDamageEvent.DamageCause.PROJECTILE, 5.0F, 0.0F));
         }
 

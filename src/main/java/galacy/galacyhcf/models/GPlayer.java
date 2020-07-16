@@ -8,7 +8,12 @@ import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemID;
 import cn.nukkit.level.Position;
+import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector2;
+import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.DoubleTag;
+import cn.nukkit.nbt.tag.FloatTag;
+import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.SourceInterface;
 import cn.nukkit.network.protocol.AddEntityPacket;
 import cn.nukkit.network.protocol.SetEntityDataPacket;
@@ -16,12 +21,14 @@ import cn.nukkit.network.protocol.UpdateBlockPacket;
 import cn.nukkit.potion.Effect;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.entities.LogoutVillager;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.managers.KitsManager;
 import galacy.galacyhcf.managers.SetsManager;
 import galacy.galacyhcf.providers.SQLStatements;
 import galacy.galacyhcf.scoreboardapi.scoreboard.SimpleScoreboard;
+import galacy.galacyhcf.tasks.VillagerTask;
 import galacy.galacyhcf.utils.Utils;
 
 import java.sql.Date;
@@ -70,6 +77,8 @@ public class GPlayer extends Player {
     public boolean firstTime = false;
     public int lastChatted = 0;
     public String lastMessage = "";
+    public boolean logout = false;
+    public int logoutTime = 30;
 
     // RANKS
     public static final int DEFAULT = 0;
@@ -122,7 +131,7 @@ public class GPlayer extends Player {
                             replace("$username", getName()).
                             replace("$xuid", getLoginChainData().getXUID()).
                             replace("$rank", "0").
-                            replace("$balance", "0").
+                            replace("$balance", "100").
                             replace("$faction_id", "0"));
 
                     loadData();
@@ -290,76 +299,99 @@ public class GPlayer extends Player {
                         for (Effect effect : SetsManager.rogueEffects) removeEffect(effect.getId());
                         sendMessage(Utils.prefix + TextFormat.YELLOW + "Removed your Rogue set.");
                         break;
+                    default:
+                        break;
                 }
                 set = SetsManager.Sets.Nothing;
             }
         }
     }
 
-    public void applyBardItem(int id) {
+    public void applyBardItem(Item item) {
         if (set != SetsManager.Sets.Bard) return;
-        if (bardCooldown != 0) {
-            sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
-            return;
-        }
 
-        switch (id) {
+        switch (item.getId()) {
             case ItemID.SUGAR:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     Effect effect = Effect.getEffect(Effect.SPEED).setAmplifier(1).setDuration(120);
-                    getInventory().remove(new Item(id, 0, 1));
+                    --item.count;
+                    getInventory().setItemInHand(item);
                     forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.FEATHER:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     Effect effect = Effect.getEffect(Effect.JUMP).setAmplifier(3).setDuration(160);
-                    getInventory().remove(new Item(id, 0, 1));
+                    --item.count;
+                    getInventory().setItemInHand(item);
                     forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.IRON_INGOT:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
                 if (bardEnergy < 20) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 20;
                     Effect effect = Effect.getEffect(Effect.DAMAGE_RESISTANCE).setAmplifier(2).setDuration(160);
-                    getInventory().remove(new Item(id, 0, 1));
+                    --item.count;
+                    getInventory().setItemInHand(item);
                     forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.GHAST_TEAR:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
                 if (bardEnergy < 30) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 30;
                     Effect effect = Effect.getEffect(Effect.REGENERATION).setAmplifier(1).setDuration(100);
-                    getInventory().remove(new Item(id, 0, 1));
+                    --item.count;
+                    getInventory().setItemInHand(item);
                     forceTeamEffects(effect);
                 }
                 break;
 
             case ItemID.BLAZE_POWDER:
+                if (bardCooldown != 0) {
+                    sendMessage(Utils.prefix + TextFormat.RED + "You have to wait " + bardCooldown + "s before using bard items again.");
+                    return;
+                }
                 if (bardEnergy <= 40) {
                     sendPopup(Utils.prefix + TextFormat.RED + "You don't have enough bard energy to use this.");
                 } else {
                     bardCooldown = 15;
                     bardEnergy -= 40;
                     Effect effect = Effect.getEffect(Effect.STRENGTH).setAmplifier(1).setDuration(80);
-                    getInventory().remove(new Item(id, 0, 1));
+                    --item.count;
+                    getInventory().setItemInHand(item);
                     forceTeamEffects(effect);
                 }
                 break;
@@ -402,7 +434,9 @@ public class GPlayer extends Player {
             sendMessage(Utils.prefix + TextFormat.GREEN + "Back-stabbed " + player.getName() + ".");
             rogueCooldown = 15;
             addEffect(Effect.getEffect(Effect.SLOWNESS).setDuration(20 * 60));
-            getInventory().setItemInHand(null);
+            Item removed = getInventory().getItemInHand();
+            --removed.count;
+            getInventory().setItemInHand(removed);
         }
     }
 
@@ -519,7 +553,7 @@ public class GPlayer extends Player {
                 return TextFormat.BOLD + "" + TextFormat.DARK_AQUA + "[STAFF] " + getName() + TextFormat.RESET;
 
             case DEVELOPER:
-                return TextFormat.BOLD + "" + TextFormat.GREEN + "[DEVELOPER] " + getName() + TextFormat.RESET;
+                return TextFormat.BOLD + "" + TextFormat.GREEN + "[DEV] " + getName() + TextFormat.RESET;
 
             default:
                 return TextFormat.GRAY + getName();
@@ -587,18 +621,46 @@ public class GPlayer extends Player {
 
     public void forceAddArmor(Item item) {
         if (item.isHelmet()) {
-            if (getInventory().getHelmet() == null) getInventory().setHelmet(item);
+            if (getInventory().getHelmet().getId() == 0) getInventory().setHelmet(item);
             else forceAddItem(item);
         } else if (item.isChestplate()) {
-            if (getInventory().getChestplate() == null) getInventory().setChestplate(item);
+            if (getInventory().getChestplate().getId() == 0) getInventory().setChestplate(item);
             else forceAddItem(item);
         } else if (item.isLeggings()) {
-            if (getInventory().getLeggings() == null) getInventory().setLeggings(item);
+            if (getInventory().getLeggings().getId() == 0) getInventory().setLeggings(item);
             else forceAddItem(item);
         } else if (item.isBoots()) {
-            if (getInventory().getBoots() == null) getInventory().setBoots(item);
+            if (getInventory().getBoots().getId() == 0) getInventory().setBoots(item);
             else forceAddItem(item);
         } else forceAddItem(item);
+    }
+
+    public void spawnLogoutVillager() {
+        FullChunk chunk = getLevel().getChunk((int) x >> 4, (int) z >> 4, true);
+        if (!chunk.isGenerated()) {
+            chunk.setGenerated();
+        }
+        if (!chunk.isPopulated()) {
+            chunk.setPopulated();
+        }
+
+        CompoundTag nbt = new CompoundTag().putList(new ListTag<DoubleTag>("Pos").add(new DoubleTag("", x)).add(new DoubleTag("", y)).add(new DoubleTag("", z)))
+                .putList(new ListTag<DoubleTag>("Motion").add(new DoubleTag("", 0)).add(new DoubleTag("", 0)).add(new DoubleTag("", 0)))
+                .putList(new ListTag<FloatTag>("Rotation").add(new FloatTag("", (float) yaw))
+                        .add(new FloatTag("", (float) pitch)));
+
+        LogoutVillager villager = (LogoutVillager) Entity.createEntity("LogoutVillager", chunk, nbt);
+        villager.inventory = getInventory();
+        villager.setMaxHealth(20);
+        villager.setHealth(20);
+        villager.setNameTagVisible(true);
+        villager.setNameTagAlwaysVisible(true);
+        villager.setNameTag(getName());
+        villager.factionId = factionId;
+
+        villager.spawnToAll();
+
+        getServer().getScheduler().scheduleRepeatingTask(new VillagerTask(GalacyHCF.instance, villager), 20);
     }
 
     public enum Chat {

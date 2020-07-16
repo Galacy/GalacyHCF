@@ -17,20 +17,20 @@ public class KitsManager {
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
         Item helmet = Item.get(ItemID.DIAMOND_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.DIAMOND_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.DIAMOND_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.DIAMOND_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item bow = Item.get(ItemID.BOW).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Bow");
         bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_BOW_POWER).setLevel(1));
@@ -58,20 +58,20 @@ public class KitsManager {
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
         Item helmet = Item.get(ItemID.DIAMOND_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.DIAMOND_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.DIAMOND_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.DIAMOND_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         return new Item[]{
                 sword,
@@ -90,24 +90,24 @@ public class KitsManager {
     public static Item[] Archer() {
         Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Sword");
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
-        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
         Item helmet = Item.get(ItemID.LEATHER_CAP).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.LEATHER_TUNIC).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.LEATHER_PANTS).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.LEATHER_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item bow = Item.get(ItemID.BOW).setCustomName(TextFormat.BOLD + "" + TextFormat.BLUE + "Archer Bow");
         bow.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_BOW_POWER).setLevel(2));
@@ -134,24 +134,24 @@ public class KitsManager {
     public static Item[] Rogue() {
         Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Sword");
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
-        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
-        Item helmet = Item.get(ItemID.GOLD_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item helmet = Item.get(ItemID.CHAIN_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Helmet");
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item chest = Item.get(ItemID.GOLD_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item chest = Item.get(ItemID.CHAIN_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Chestplate");
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item leg = Item.get(ItemID.GOLD_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item leg = Item.get(ItemID.CHAIN_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Leggins");
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item boots = Item.get(ItemID.GOLD_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item boots = Item.get(ItemID.CHAIN_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.WHITE + "Rogue Boots");
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         return new Item[]{
                 sword,
@@ -170,24 +170,24 @@ public class KitsManager {
     public static Item[] Bard() {
         Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Sword");
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
-        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
-        Item helmet = Item.get(ItemID.CHAIN_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item helmet = Item.get(ItemID.GOLD_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Helmet");
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item chest = Item.get(ItemID.CHAIN_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item chest = Item.get(ItemID.GOLD_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Chestplate");
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item leg = Item.get(ItemID.CHAIN_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item leg = Item.get(ItemID.GOLD_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Leggins");
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
-        Item boots = Item.get(ItemID.CHAIN_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        Item boots = Item.get(ItemID.GOLD_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.GOLD + "Bard Boots");
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         return new Item[]{
                 sword,
@@ -210,7 +210,7 @@ public class KitsManager {
         Item pickaxe = Item.get(ItemID.DIAMOND_PICKAXE).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Pickaxe");
         pickaxe.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_EFFICIENCY).setLevel(4));
         pickaxe.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_FORTUNE_DIGGING).setLevel(2));
-        pickaxe.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        pickaxe.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item shovel = Item.get(ItemID.DIAMOND_SHOVEL).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Shovel");
         shovel.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_EFFICIENCY).setLevel(4));
@@ -223,20 +223,21 @@ public class KitsManager {
         axe.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
 
         Item helmet = Item.get(ItemID.IRON_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.IRON_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.IRON_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.IRON_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.GREEN + "Miner Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(4));
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_FALL).setLevel(3));
 
         return new Item[]{
                 pickaxe,

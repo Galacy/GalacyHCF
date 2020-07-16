@@ -273,6 +273,11 @@ public class FactionCommand extends VanillaCommand {
 
                                             break;
                                         }
+                                        if (newBalance < 1) {
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not deposit less than 1 dollar.");
+
+                                            break;
+                                        }
                                         if (((GPlayer) sender).balance < newBalance)
                                             sender.sendMessage(Utils.prefix + TextFormat.RED + "That's more money than what you have!");
                                         else {
@@ -352,6 +357,11 @@ public class FactionCommand extends VanillaCommand {
                                             newBalance = Integer.parseInt(args[1]);
                                         } catch (NumberFormatException exception) {
                                             sender.sendMessage(Utils.prefix + TextFormat.RED + "The amount has to be a real number. /f withdraw <amount>");
+
+                                            break;
+                                        }
+                                        if (newBalance < 1) {
+                                            sender.sendMessage(Utils.prefix + TextFormat.RED + "You can not withdraw less than 1 dollar.");
 
                                             break;
                                         }

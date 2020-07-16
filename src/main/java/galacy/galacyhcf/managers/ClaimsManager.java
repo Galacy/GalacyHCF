@@ -2,6 +2,7 @@ package galacy.galacyhcf.managers;
 
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.borders.SpawnBorder;
 import galacy.galacyhcf.models.Claim;
 import galacy.galacyhcf.models.Faction;
 import galacy.galacyhcf.providers.MySQL;

@@ -14,6 +14,7 @@ import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.entity.EntityDeathEvent;
 import cn.nukkit.event.entity.ExplosionPrimeEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
@@ -32,6 +33,7 @@ import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DummyBossBar;
 import cn.nukkit.utils.TextFormat;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.entities.LogoutVillager;
 import galacy.galacyhcf.managers.BorderFace;
 import galacy.galacyhcf.managers.ClaimProcess;
 import galacy.galacyhcf.managers.KitsManager;
@@ -62,6 +64,7 @@ public class EventsListener implements Listener {
             if (((GPlayer) player).firstTime)
                 player.getInventory().addItem(new ItemSteak(0, 64), new ItemCompass(0, 1));
             ((GPlayer) player).applySet(false);
+
             player.getServer().getScheduler().scheduleDelayedTask(GalacyHCF.instance, () -> {
                 ((GPlayer) player).updateNametag();
                 DummyBossBar bar = new DummyBossBar.Builder(player).text(TextFormat.BOLD + "" + TextFormat.GRAY + "You're playing on " + TextFormat.GOLD + "Galacy.me | 19132").color(BlockColor.GRAY_BLOCK_COLOR).build();
@@ -404,7 +407,6 @@ public class EventsListener implements Listener {
         event.setBlockBreaking(false);
     }
 
-
     @EventHandler(priority = EventPriority.HIGH)
     public void on(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -444,6 +446,13 @@ public class EventsListener implements Listener {
                 case BlockID.HOPPER_BLOCK:
                 case BlockID.DROPPER:
                 case BlockID.DISPENSER:
+                case BlockID.DARK_OAK_DOOR_BLOCK:
+                case BlockID.ACACIA_DOOR_BLOCK:
+                case BlockID.BIRCH_DOOR_BLOCK:
+                case BlockID.IRON_DOOR_BLOCK:
+                case BlockID.JUNGLE_DOOR_BLOCK:
+                case BlockID.SPRUCE_DOOR_BLOCK:
+                case BlockID.WOOD_DOOR_BLOCK:
                 case BlockID.TNT:
                     editTerrainCheck(event, event.getBlock(), player, false);
                     break;
@@ -456,13 +465,6 @@ public class EventsListener implements Listener {
                 case BlockID.FENCE_GATE_JUNGLE:
                 case BlockID.IRON_TRAPDOOR:
                 case BlockID.TRAPDOOR:
-                case BlockID.DARK_OAK_DOOR_BLOCK:
-                case BlockID.ACACIA_DOOR_BLOCK:
-                case BlockID.BIRCH_DOOR_BLOCK:
-                case BlockID.IRON_DOOR_BLOCK:
-                case BlockID.JUNGLE_DOOR_BLOCK:
-                case BlockID.SPRUCE_DOOR_BLOCK:
-                case BlockID.WOOD_DOOR_BLOCK:
                     editTerrainCheck(event, event.getBlock(), player, true);
                     break;
             }
@@ -483,7 +485,7 @@ public class EventsListener implements Listener {
                         break;
                 }
                 if (!event.isCancelled() && (event.getAction() == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
-                    ((GPlayer) player).applyBardItem(event.getItem().getId());
+                    ((GPlayer) player).applyBardItem(event.getItem());
                     if (event.getItem().getId() == ItemID.ENDER_PEARL) {
                         if (System.currentTimeMillis() / 1000 < ((GPlayer) player).enderpearlCountdown) {
                             event.setCancelled(true);
@@ -786,6 +788,15 @@ public class EventsListener implements Listener {
                 event.getPlayer().sendMessage(Utils.prefix + TextFormat.RED + "This item is not allowed on the server.");
 
                 break;
+        }
+    }
+
+    //@EventHandler
+    public void on(EntityDeathEvent event) {
+        if (event.getEntity() instanceof LogoutVillager) {
+            if (((LogoutVillager) event.getEntity()).inventory != null) {
+                event.setDrops((Item[]) ((LogoutVillager) event.getEntity()).inventory.getContents().values().toArray());
+            }
         }
     }
 }

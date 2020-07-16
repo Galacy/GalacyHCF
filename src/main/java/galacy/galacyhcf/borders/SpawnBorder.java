@@ -1,21 +1,19 @@
-package galacy.galacyhcf.managers;
+package galacy.galacyhcf.borders;
 
 import cn.nukkit.math.Vector3;
 import galacy.galacyhcf.GalacyHCF;
+import galacy.galacyhcf.managers.BorderFace;
 
-public class SpawnBorder {
-    public int minX, minZ, maxX, maxZ, y;
+public class SpawnBorder extends Border {
+    public int y;
 
     public SpawnBorder(int minX, int minZ, int maxX, int maxZ) {
-        this.minX = minX;
-        this.minZ = minZ;
-        this.maxX = maxX;
-        this.maxZ = maxZ;
+        super(minX, minZ, maxX, maxZ);
         this.y = GalacyHCF.instance.getServer().getDefaultLevel().getSafeSpawn().getFloorY();
     }
 
     public boolean insideSpawn(int x, int z) {
-        return minX <= x && maxX >= x && minZ <= z && maxZ >= z;
+        return inside(x, z);
     }
 
     public BorderFace borderFace(int x, int z) {
