@@ -44,7 +44,7 @@ public class ClaimsManager {
                 if (claim.type == Claim.spawnClaim) spawn = claim;
             }
             if (spawn == null) {
-                GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "Spawn not found, creating a new one 100x100.");
+                GalacyHCF.instance.getLogger().info(TextFormat.YELLOW + "Spawn not found, creating a new one 160x160.");
                 String currentTime = Utils.dateFormat.format(new Date());
                 try {
                     mysql.exec(SQLStatements.createFactionClaim.
@@ -53,10 +53,10 @@ public class ClaimsManager {
                             replace("$type", String.valueOf(Claim.spawnClaim)).
                             replace("$faction_id", "0").
                             replace("$faction_name", "Spawn").
-                            replace("$x1", "-25").
-                            replace("$x2", "25").
-                            replace("$z1", "-25").
-                            replace("$z2", "25")
+                            replace("$x1", "-80").
+                            replace("$x2", "80").
+                            replace("$z1", "-80").
+                            replace("$z2", "80")
                     );
                 } catch (SQLException e) {
                     GalacyHCF.instance.getLogger().info(TextFormat.RED + "[MySQL]: Had issues creating new claim: " + e);

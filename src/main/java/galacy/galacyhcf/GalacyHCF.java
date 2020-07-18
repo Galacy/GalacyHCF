@@ -9,9 +9,7 @@ import galacy.galacyhcf.commands.*;
 import galacy.galacyhcf.entities.EnderPearl;
 import galacy.galacyhcf.entities.ItemDrop;
 import galacy.galacyhcf.entities.LogoutVillager;
-import galacy.galacyhcf.listerners.Elevator;
 import galacy.galacyhcf.listerners.EventsListener;
-import galacy.galacyhcf.listerners.FoundDiamond;
 import galacy.galacyhcf.managers.ClaimsManager;
 import galacy.galacyhcf.managers.FactionsManager;
 import galacy.galacyhcf.managers.ShopsManager;
@@ -50,7 +48,7 @@ public class GalacyHCF extends PluginBase {
         // Managers
         factionsManager = new FactionsManager(mysql);
         claimsManager = new ClaimsManager(mysql);
-        worldBorder = new WorldBorder(-1000, -1000, 1000, 1000);
+        worldBorder = new WorldBorder(-2000, -2000, 2000, 2000);
         shopsManager = new ShopsManager(getDataFolder().getPath() + "/shops.json");
 
         // Commands
@@ -69,6 +67,7 @@ public class GalacyHCF extends PluginBase {
         getServer().getCommandMap().register("GalacyHCF", new KitCommand("kit"));
         // FIXME: getServer().getCommandMap().register("GalacyHCF", new CraftCommand("craft"));
         getServer().getCommandMap().register("GalacyHCF", new TLCommand("tl"));
+        getServer().getCommandMap().register("GalacyHCF", new SetRankCommand("setrank"));
 
         // Tasks
         getServer().getScheduler().scheduleRepeatingTask(new ScoreboardTask(this), 10, true);
@@ -77,11 +76,13 @@ public class GalacyHCF extends PluginBase {
         getServer().getScheduler().scheduleRepeatingTask(new PvPTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(new BardTask(this), 20);
         getServer().getScheduler().scheduleRepeatingTask(dtrRegenerationTask = new DtrRegenerationTask(this), 20 * 120);
+        getServer().getScheduler().scheduleRepeatingTask(new MessageAdTask(this), 20 * 120);
+        getServer().getScheduler().scheduleRepeatingTask(new GarbageCollectionTask(this), 20 * 60 * 60, true);
 
         // Listeners
         getServer().getPluginManager().registerEvents(new EventsListener(), this);
-        getServer().getPluginManager().registerEvents(new Elevator(), this);
-        getServer().getPluginManager().registerEvents(new FoundDiamond(), this);
+        //getServer().getPluginManager().registerEvents(new Elevator(), this);
+        //getServer().getPluginManager().registerEvents(new FoundDiamond(), this);
 
         // Entities
         Entity.registerEntity("EnderPearl", EnderPearl.class, true);

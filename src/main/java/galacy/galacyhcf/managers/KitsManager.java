@@ -12,24 +12,24 @@ public class KitsManager {
 
     public static Item[] Galacy() {
         Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Sword");
-        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(3));
+        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
         Item helmet = Item.get(ItemID.DIAMOND_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.DIAMOND_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.DIAMOND_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.DIAMOND_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(3));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item bow = Item.get(ItemID.BOW).setCustomName(TextFormat.BOLD + "" + TextFormat.DARK_PURPLE + "Galacy Bow");
@@ -53,24 +53,24 @@ public class KitsManager {
 
     public static Item[] Diamond() {
         Item sword = Item.get(ItemID.DIAMOND_SWORD).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Sword");
-        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(2));
+        sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DAMAGE_ALL).setLevel(1));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(4));
         sword.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_LOOTING).setLevel(2));
 
         Item helmet = Item.get(ItemID.DIAMOND_HELMET).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Helmet");
-        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(1));
         helmet.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item chest = Item.get(ItemID.DIAMOND_CHESTPLATE).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Chestplate");
-        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(1));
         chest.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item leg = Item.get(ItemID.DIAMOND_LEGGINGS).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Leggins");
-        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(1));
         leg.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         Item boots = Item.get(ItemID.DIAMOND_BOOTS).setCustomName(TextFormat.BOLD + "" + TextFormat.AQUA + "Diamond Boots");
-        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(2));
+        boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_PROTECTION_ALL).setLevel(1));
         boots.addEnchantment(Enchantment.getEnchantment(Enchantment.ID_DURABILITY).setLevel(3));
 
         return new Item[]{

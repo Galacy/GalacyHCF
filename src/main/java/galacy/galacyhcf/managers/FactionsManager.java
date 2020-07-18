@@ -10,10 +10,9 @@ import galacy.galacyhcf.utils.Utils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Objects;
 
 public class FactionsManager {
-    public static final int MaxMembers = GalacyHCF.dotenv.get("MAX_MEMBERS") != null ? Integer.parseInt(Objects.requireNonNull(GalacyHCF.dotenv.get("MAX_MEMBERS")), 50) : 15;
+    public static final int MaxMembers = 10; //GalacyHCF.dotenv.get("MAX_MEMBERS") != null ? Integer.parseInt(Objects.requireNonNull(GalacyHCF.dotenv.get("MAX_MEMBERS")), 50) : 15;
 
     public MySQL mysql;
 

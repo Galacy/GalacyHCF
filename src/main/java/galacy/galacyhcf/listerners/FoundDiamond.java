@@ -5,7 +5,6 @@ import cn.nukkit.block.BlockID;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
-import cn.nukkit.math.BlockVector3;
 import cn.nukkit.utils.TextFormat;
 
 import java.util.ArrayList;
@@ -22,10 +21,12 @@ public class FoundDiamond implements Listener {
                 for (int x = block.getFloorX() - 4; x <= block.getFloorX() + 4; x++) {
                     for (int y = block.getFloorY() - 4; y <= block.getFloorY() + 4; y++) {
                         for (int z = block.getFloorZ() - 4; z <= block.getFloorZ() + 4; z++) {
-                            BlockVector3 b = block.getLevel().getBlock(x, y, z).asBlockVector3();
-                            if (!blocks.contains(b.toString())) {
-                                blocks.add(b.toString());
-                                count++;
+                            Block b = block.getLevel().getBlock(x, y, z);
+                            if (b.getId() == BlockID.DIAMOND_ORE) {
+                                if (!blocks.contains(b.toString())) {
+                                    blocks.add(b.toString());
+                                    count++;
+                                }
                             }
                         }
                     }

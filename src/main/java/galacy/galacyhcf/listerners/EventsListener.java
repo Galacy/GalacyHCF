@@ -48,7 +48,7 @@ public class EventsListener implements Listener {
     @EventHandler
     public void on(PlayerCommandPreprocessEvent event) {
         String[] args = event.getMessage().split(" ");
-        if (args[0].equals("/me")) event.setCancelled(true);
+        if (args[0].equals("/me") || args[0].equals("/reload")) event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -384,8 +384,8 @@ public class EventsListener implements Listener {
                 for (GPlayer member : faction.onlineMembers()) {
                     member.sendMessage(TextFormat.DARK_GREEN + player.getName() + ": " + TextFormat.GREEN + event.getMessage());
                 }
-            } else {
-                if (System.currentTimeMillis() / 1000 > (((GPlayer) player).lastChatted + 3) || ((GPlayer) player).rank != GPlayer.DEFAULT) {
+            } else if (((GPlayer) player).rank == GPlayer.DEFAULT) {
+                if (System.currentTimeMillis() / 1000 > (((GPlayer) player).lastChatted + 3)) {
                     ((GPlayer) player).lastChatted = (int) System.currentTimeMillis() / 1000;
                     ((GPlayer) player).lastMessage = event.getMessage();
                     if (((GPlayer) player).factionId != 0) {

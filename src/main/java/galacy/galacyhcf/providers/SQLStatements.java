@@ -27,4 +27,6 @@ public class SQLStatements {
     public static final String createFactionClaim = "INSERT INTO claims(created_at, updated_at, type, faction_id, faction_name, x1, x2, z1, z2) VALUES ('$created_at', '$updated_at', $type, $faction_id, '$faction_name', $x1, $x2, $z1, $z2);";
     public static final String deleteClaimsByFactionId = "DELETE FROM claims WHERE faction_id=$faction_id;";
     public static final String dtrFactions = "SELECT * FROM factions WHERE dtr < max_dtr;";
+    public static final String updatePlayerRank = "UPDATE players SET rank=$rank, updated_at='$updated_at' WHERE xuid='$xuid';";
+
 }

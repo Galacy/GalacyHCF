@@ -9,7 +9,7 @@ public class SpawnBorder extends Border {
 
     public SpawnBorder(int minX, int minZ, int maxX, int maxZ) {
         super(minX, minZ, maxX, maxZ);
-        this.y = GalacyHCF.instance.getServer().getDefaultLevel().getSafeSpawn().getFloorY();
+        this.y = GalacyHCF.instance.getServer().getDefaultLevel().getHighestBlockAt(maxX, maxZ) + 1;
     }
 
     public boolean insideSpawn(int x, int z) {
